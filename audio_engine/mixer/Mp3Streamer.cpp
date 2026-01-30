@@ -1,63 +1,117 @@
-#include "Mp3Streamer.h"
+#include "Mp3Streamer.h" // Include the header for this class definition
 
-namespace mixer {
+namespace mixer {      // Put everything in the mixer namespace to avoid naming collisions
+
+// ==========================
+// Constructor
+// ==========================
 Mp3Streamer::Mp3Streamer() {
-  formatManager.registerBasicFormats(); // MP3, WAV, etc
+    // Register standard audio formats (MP3, WAV, AIFF, FLAC, etc.)
+    // This allows the AudioFormatManager to create readers for these types.
+    formatManager.registerBasicFormats();
 }
 
-Mp3Streamer::~Mp3Streamer() { transport.setSource(nullptr); }
+// ==========================
+// Destructor
+// ==========================
+Mp3Streamer::~Mp3Streamer() {
+    // Detach the transport source from any reader to safely release resources.
+    // This ensures no dangling pointers remain when object is destroyed.
+    transport.setSource(nullptr);
+}
 
+// ==========================
+// Load an audio file (MP3/WAV/FLAC)
+// ==========================
 bool Mp3Streamer::loadFile(const juce::File &file) {
-  if (!file.existsAsFile()) {
-    juce::Logger::writeToLog("File does not exist: " + file.getFullPathName());
-    return false;
-  }
+    // Check if the file exists on disk
+    if (!file.existsAsFile()) {
+        juce::Logger::writeToLog("File does not exist: " + file.getFullPathName());
+        return false; // Return false if the file can't be found
+    }
 
-  std::unique_ptr<juce::AudioFormatReader> reader(
-      formatManager.createReaderFor(file));
+    // Create an AudioFormatReader for the file.
+    // formatManager knows how to decode MP3, WAV, FLAC, etc.
+    std::unique_ptr<juce::AudioFormatReader> reader(
+        formatManager.createReaderFor(file));
 
-  if (reader == nullptr) {
-    juce::Logger::writeToLog("Failed to create AudioFormatReader for: " +
-                             file.getFullPathName());
+    // If we couldn't create a reader (unsupported format, corrupted file, etc.)
+    if (reader == nullptr) {
+        juce::Logger::writeToLog("Failed to create AudioFormatReader for: " +
+                                 file.getFullPathName());
 
-    // Optional: check file extension
-    juce::Logger::writeToLog("File extension: " + file.getFileExtension());
-    juce::Logger::writeToLog(
-        "Supported formats: MP3, WAV, AIFF, FLAC (registerBasicFormats())");
+        // Optional debug info
+        juce::Logger::writeToLog("File extension: " + file.getFileExtension());
+        juce::Logger::writeToLog(
+            "Supported formats: MP3, WAV, AIFF, FLAC (registerBasicFormats())");
 
-    return false;
-  }
+        return false;
+    }
 
-  readerSource.reset(new juce::AudioFormatReaderSource(reader.release(), true));
+    // Wrap the reader in an AudioFormatReaderSource, which is compatible with AudioTransportSource
+    readerSource.reset(new juce::AudioFormatReaderSource(reader.release(), true));
 
-  transport.setSource(readerSource.get(),
-                      0, // read ahead buffer (0 = default)
-                      nullptr,
-                      readerSource->getAudioFormatReader()->sampleRate);
+    // Connect the reader source to the transport.
+    // 0 = default read-ahead buffer, nullptr = default thread pool
+    // sampleRate = ensures transport plays at correct speed
+    transport.setSource(readerSource.get(),
+                        0,
+                        nullptr,
+                        readerSource->getAudioFormatReader()->sampleRate);
 
-  juce::Logger::writeToLog("Successfully loaded: " + file.getFullPathName());
-  return true;
+    // Log success
+    juce::Logger::writeToLog("Successfully loaded: " + file.getFullPathName());
+    return true;
 }
 
+// ==========================
+// Prepare to play (AudioSource override)
+// ==========================
 void Mp3Streamer::prepareToPlay(int samplesPerBlock, double sampleRate) {
-  transport.prepareToPlay(samplesPerBlock, sampleRate);
+    // Forward the call to the transport source
+    // This allocates internal buffers and prepares for streaming audio
+    transport.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
-void Mp3Streamer::releaseResources() { transport.releaseResources(); }
+// ==========================
+// Release resources (AudioSource override)
+// ==========================
+void Mp3Streamer::releaseResources() {
+    // Free any buffers allocated in prepareToPlay
+    transport.releaseResources();
+}
 
-
-bool mixer::Mp3Streamer::isPlaying() const
-{
+// ==========================
+// Query if the song is currently playing
+// ==========================
+bool Mp3Streamer::isPlaying() const {
+    // Return the playing state of the transport source
     return transport.isPlaying();
 }
 
-
-void Mp3Streamer::start() { transport.start(); }
-
-void Mp3Streamer::stop() { transport.stop(); }
-
-void Mp3Streamer::getNextAudioBlock(
-    const juce::AudioSourceChannelInfo &bufferToFill) {
-  transport.getNextAudioBlock(bufferToFill);
+// ==========================
+// Start playback
+// ==========================
+void Mp3Streamer::start() {
+    // Starts streaming audio from the beginning (or current transport position)
+    transport.start();
 }
+
+// ==========================
+// Stop playback
+// ==========================
+void Mp3Streamer::stop() {
+    // Stops audio playback immediately
+    transport.stop();
+}
+
+// ==========================
+// Fill audio buffer (AudioSource override)
+// ==========================
+void Mp3Streamer::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) {
+    // Let the transport source fill the output buffer for playback
+    // bufferToFill contains pointers to output channels and sample ranges
+    transport.getNextAudioBlock(bufferToFill);
+}
+
 } // namespace mixer
