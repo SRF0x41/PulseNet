@@ -1,33 +1,56 @@
-#include <juce_core/juce_core.h>
+#include "mixer/Mp3Streamer.h"
 #include <juce_audio_basics/juce_audio_basics.h>
-#include "mixer/CrossFader.h"
-
-
+#include <juce_audio_devices/juce_audio_devices.h>
+#include <juce_core/juce_core.h>
 
 int main()
 {
     juce::ConsoleApplication app;
 
-    constexpr int channels = 2;
-    constexpr int samples  = 512;
+    // Setup audio device manager
+    juce::AudioDeviceManager deviceManager;
+    deviceManager.initialise(
+        0, // no inputs
+        2, // stereo output
+        nullptr,
+        true, // select default device
+        {},   // preferred setup
+        nullptr);
 
-    juce::AudioBuffer<float> a (channels, samples);
-    juce::AudioBuffer<float> b (channels, samples);
-    juce::AudioBuffer<float> out;
+    mixer::Mp3Streamer streamer;
 
-    a.clear();
-    b.clear();
+    juce::File mp3File("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Holdin On.mp3");
+    if (!streamer.loadFile(mp3File))
+    {
+        juce::Logger::writeToLog("Failed to load MP3");
+        return 1;
+    }
 
-    // Fill buffers with dummy signals
-    a.applyGain (0.25f);
-    b.applyGain (1.0f);
+    // Prepare the streamer for playback
+    streamer.prepareToPlay(
+        512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
+    streamer.start();
 
-    mixer::CrossFader xf;
-    xf.setPosition (0.5f); // equal blend
+    // Hook streamer into device callback
+    juce::AudioSourcePlayer audioSourcePlayer;
+    audioSourcePlayer.setSource(&streamer);
+    deviceManager.addAudioCallback(&audioSourcePlayer);
 
-    xf.process (a, b, out);
+    juce::Logger::writeToLog("Playing MP3...");
 
-    juce::Logger::writeToLog ("Crossfade processed successfully");
+    // --- Wait until playback finishes ---
+    while (streamer.isPlaying()) // <-- automatically stops when song ends
+    {
+        juce::Thread::sleep(100); // poll every 100 ms
+    }
+
+    juce::Logger::writeToLog("Playback finished.");
+
+    // Cleanup
+    deviceManager.removeAudioCallback(&audioSourcePlayer);
+    audioSourcePlayer.setSource(nullptr);
+    streamer.stop();
+    streamer.releaseResources();
 
     return 0;
 }
