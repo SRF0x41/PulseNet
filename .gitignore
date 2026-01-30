@@ -1,0 +1,111 @@
+# --------------------
+# Python
+# --------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pycache/
+*.ipynb_checkpoints
+venv/
+env/
+.env
+*.egg-info/
+dist/
+build/
+*.log
+
+# --------------------
+# C++ / JUCE / build artifacts
+# --------------------
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+*.a
+*.lib
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.app
+*.vs/
+*.vscode/
+*.user
+*.xcodeproj/
+*.xcworkspace/
+Debug/
+Release/
+Build/
+DerivedData/
+*.dSYM/
+
+# --------------------
+# Node / Electron
+# --------------------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+dist/
+build/
+out/
+.env
+
+# --------------------
+# Audio / ML / caches
+# --------------------
+data/analysis_cache/
+data/embeddings/
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.aiff
+*.cache
+*.pickle
+*.pt
+*.pth
+*.onnx
+*.h5
+*.npy
+*.npz
+
+# --------------------
+# OS / Editors
+# --------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+*.log
+*.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# --------------------
+# Optional: debug files
+# --------------------
+debug_audio_output/
+tmp/
+
+
+
+
+# Planing txts
+*.txt
+
+
+# rips
+get_audio/
+
+
+JUCE
+
+*.mp3
