@@ -9,7 +9,7 @@ int main() {
     // --------------------
     // Create tracks
     // --------------------
-    AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Disclosure - Latch ft. Sam Smith.mp3");
+    AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Call of Duty Black Ops - Number lady  [HD].mp3");
     AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/usher ft will i am   OMG disco fries radio mix.mp3");
 
     // --------------------

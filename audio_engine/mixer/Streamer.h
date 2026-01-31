@@ -39,12 +39,15 @@ private:
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
     std::unique_ptr<juce::AudioFormatReaderSource> nextReaderSource;
 
+
+ 
+
     juce::AudioSourcePlayer audioSourcePlayer;
 
     std::vector<juce::File> track_list;
 
     bool crossfadeActive = false;
-    double crossfadeDuration = 5.0;
+    double crossfadeDuration = 35.0;
     double crossfadeProgress = 0.0;
     double currentSampleRate = 44100.0;
 
