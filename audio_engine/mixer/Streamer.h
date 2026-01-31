@@ -2,37 +2,44 @@
 
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_audio_formats/juce_audio_formats.h>
+#include <vector>
 
 namespace mixer {
-class Streamer : public juce::AudioSource {
+class Streamer : public juce::AudioSource, public juce::Timer {
 public:
   Streamer(const std::string &trackA);
   ~Streamer();
 
-  bool loadFile(const juce::File &file);
-  void prepareToPlay(int samplesPerBlock, double sampleRate);
-  void releaseResources();
   bool isPlaying() const; // <-- add this
 
   void start();
   void stop();
 
-  void getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill);
+  int addNext(const std::string &path);
+
+  void timerCallback() override;
 
 private:
-  juce::AudioFormatManager formatManager;
+  bool loadFile(const juce::File &file);
+  void prepareToPlay(int samplesPerBlock, double sampleRate);
+  void releaseResources();
+  void getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill);
 
+  juce::AudioFormatManager formatManager;
   std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
   juce::AudioTransportSource transport;
-
   std::string trackA_path;
   juce::File trackA_file;
-
   std::string trackB_path;
   juce::File trackB_file;
   float masterVolume;
-
   juce::AudioDeviceManager deviceManager;
+  juce::AudioSourcePlayer audioSourcePlayer;
+
+  std::vector<juce::File> track_list;
+
+  bool wasPlaying;
+  int currentTrackIndex;
 };
 } // namespace mixer
 

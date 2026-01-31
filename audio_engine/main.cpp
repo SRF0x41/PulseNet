@@ -3,58 +3,48 @@
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_core/juce_core.h>
 
-int main()
-{
-    juce::ConsoleApplication app;
+int main() {
+  juce::ConsoleApplication app;
 
-    // Setup audio device manager
-    // juce::AudioDeviceManager deviceManager;
-    // deviceManager.initialise(
-    //     0, // no inputs
-    //     2, // stereo output
-    //     nullptr,
-    //     true, // select default device
-    //     {},   // preferred setup
-    //     nullptr);
+  // Setup audio device manager
+  // juce::AudioDeviceManager deviceManager;
+  // deviceManager.initialise(
+  //     0, // no inputs
+  //     2, // stereo output
+  //     nullptr,
+  //     true, // select default device
+  //     {},   // preferred setup
+  //     nullptr);
 
-    mixer::Streamer streamer("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Holdin On.mp3");
+  mixer::Streamer streamer("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/"
+                           "Flume - Holdin On.mp3");
 
-    // juce::File mp3File("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Holdin On.mp3");
-    // if (!streamer.loadFile(mp3File))
-    // {
-    //     juce::Logger::writeToLog("Failed to load MP3");
-    //     return 1;
-    // }
+  // juce::File mp3File("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume
+  // - Holdin On.mp3"); if (!streamer.loadFile(mp3File))
+  // {
+  //     juce::Logger::writeToLog("Failed to load MP3");
+  //     return 1;
+  // }
 
-    // // Prepare the streamer for playback
-    // streamer.prepareToPlay(
-    //     512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
-    // streamer.start();
+  // // Prepare the streamer for playback
+  // streamer.prepareToPlay(
+  //     512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
+  streamer.start();
 
-    // // Hook streamer into device callback
-    // juce::AudioSourcePlayer audioSourcePlayer;
-    // audioSourcePlayer.setSource(&streamer);
-    // deviceManager.addAudioCallback(&audioSourcePlayer);
+  // // Hook streamer into device callback
+  // juce::AudioSourcePlayer audioSourcePlayer;
+  // audioSourcePlayer.setSource(&streamer);
+  // deviceManager.addAudioCallback(&audioSourcePlayer);
 
-    // juce::Logger::writeToLog("Playing MP3...");
+  streamer.addNext("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - "
+                   "Sleepless feat. Jezzabell Doran.mp3");
 
-    // // --- Wait until playback finishes ---
-    // while (streamer.isPlaying()) // <-- automatically stops when song ends
-    // {
-    //     juce::Thread::sleep(100); // poll every 100 ms
-    // }
+  
 
-    // juce::Logger::writeToLog("Playback finished.");
-
-    // // Cleanup
-    // deviceManager.removeAudioCallback(&audioSourcePlayer);
-    // audioSourcePlayer.setSource(nullptr);
-    // streamer.stop();
-    // streamer.releaseResources();
-
-    return 0;
+  // Run the message loop (this keeps the app alive and timers firing)
+  juce::MessageManager::getInstance()->runDispatchLoop();
+  return 0;
 }
-
 
 // int main()
 // {
@@ -77,8 +67,10 @@ int main()
 //     // -------------------------
 //     mixer::Streamer song1, song2;
 
-//     juce::File file1("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Holdin On.mp3");
-//     juce::File file2("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Sleepless feat. Jezzabell Doran.mp3");
+//     juce::File file1("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume
+//     - Holdin On.mp3"); juce::File
+//     file2("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume -
+//     Sleepless feat. Jezzabell Doran.mp3");
 
 //     if (!song1.loadFile(file1) || !song2.loadFile(file2))
 //     {
@@ -87,8 +79,9 @@ int main()
 //     }
 
 //     // Prepare each song
-//     double sampleRate = deviceManager.getCurrentAudioDevice()->getCurrentSampleRate();
-//     int blockSize = 512;
+//     double sampleRate =
+//     deviceManager.getCurrentAudioDevice()->getCurrentSampleRate(); int
+//     blockSize = 512;
 
 //     song1.prepareToPlay(blockSize, sampleRate);
 //     song2.prepareToPlay(blockSize, sampleRate);
@@ -101,8 +94,8 @@ int main()
 //     // Mixer
 //     // -------------------------
 //     juce::MixerAudioSource mixerSource;
-//     mixerSource.addInputSource(&song1, false); // false = don't delete when mixer is deleted
-//     mixerSource.addInputSource(&song2, false);
+//     mixerSource.addInputSource(&song1, false); // false = don't delete when
+//     mixer is deleted mixerSource.addInputSource(&song2, false);
 
 //     // -------------------------
 //     // Audio output
@@ -132,5 +125,3 @@ int main()
 
 //     return 0;
 // }
-
-

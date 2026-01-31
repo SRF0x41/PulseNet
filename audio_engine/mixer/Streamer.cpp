@@ -6,7 +6,7 @@ namespace mixer { // Put everything in the mixer namespace to avoid naming
 // ==========================
 // Constructor
 // ==========================
-Streamer::Streamer(const std::string &trackA_path) {
+Streamer::Streamer(const std::string &trackA_path)  {
   // Register standard audio formats (MP3, WAV, AIFF, FLAC, etc.)
   // This allows the AudioFormatManager to create readers for these types.
   formatManager.registerBasicFormats();
@@ -21,22 +21,31 @@ Streamer::Streamer(const std::string &trackA_path) {
     //     return 1;
   }
 
-  deviceManager.initialise(
-        0, // no inputs
-        2, // stereo output
-        nullptr,
-        true, // select default device
-        {},   // preferred setup
-        nullptr);
+  deviceManager.initialise(0, // no inputs
+                           2, // stereo output
+                           nullptr,
+                           true, // select default device
+                           {},   // preferred setup
+                           nullptr);
+
+  this->prepareToPlay(
+      512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
+
+  audioSourcePlayer.setSource(this);
+  deviceManager.addAudioCallback(&audioSourcePlayer);
+  
+
 }
 
 // ==========================
 // Destructor
 // ==========================
 Streamer::~Streamer() {
-  // Detach the transport source from any reader to safely release resources.
-  // This ensures no dangling pointers remain when object is destroyed.
+   stopTimer();
+  audioSourcePlayer.setSource(nullptr);
+  deviceManager.removeAudioCallback(&audioSourcePlayer);
   transport.setSource(nullptr);
+
 }
 
 // ==========================
@@ -53,8 +62,6 @@ bool Streamer::loadFile(const juce::File &file) {
   // formatManager knows how to decode MP3, WAV, FLAC, etc.
   std::unique_ptr<juce::AudioFormatReader> reader(
       formatManager.createReaderFor(file));
-
-  // If we couldn't create a reader (unsupported format, corrupted file, etc.)
   if (reader == nullptr) {
     juce::Logger::writeToLog("Failed to create AudioFormatReader for: " +
                              file.getFullPathName());
@@ -80,6 +87,20 @@ bool Streamer::loadFile(const juce::File &file) {
   // Log success
   juce::Logger::writeToLog("Successfully loaded: " + file.getFullPathName());
   return true;
+}
+
+int Streamer::addNext(const std::string &path) {
+  juce::File new_track = juce::File(path);
+  if (!new_track.existsAsFile()) {
+    juce::Logger::writeToLog("Failed to add new track to track list: " +
+                             new_track.getFullPathName());
+  }
+
+  track_list.emplace_back(new_track);
+
+  juce::Logger::writeToLog("Added new track to track list: " +
+                           new_track.getFullPathName());
+  return 0;
 }
 
 // ==========================
@@ -113,6 +134,7 @@ bool Streamer::isPlaying() const {
 void Streamer::start() {
   // Starts streaming audio from the beginning (or current transport position)
   transport.start();
+  startTimerHz(10); 
 }
 
 // ==========================
@@ -132,5 +154,68 @@ void Streamer::getNextAudioBlock(
   // bufferToFill contains pointers to output channels and sample ranges
   transport.getNextAudioBlock(bufferToFill);
 }
+void Streamer::timerCallback()
+{
+    if (!transport.isPlaying())
+    {
+        if (!track_list.empty())
+        {
+            juce::File next_track = track_list.front();
+            track_list.erase(track_list.begin());
+
+            juce::Logger::writeToLog("Loading next track: " + next_track.getFullPathName());
+
+            transport.stop();
+            transport.setSource(nullptr);
+
+            if (loadFile(next_track))
+                transport.start();
+        }
+        else
+        {
+            juce::Logger::writeToLog("Playlist finished");
+            stopTimer();
+        }
+    }
+}
+
+
+
+
 
 } // namespace mixer
+
+/*void Streamer::timerCallback()
+{
+    const bool isPlayingNow = transport.isPlaying();
+
+    // Detect "song just finished"
+    if (wasPlaying && !isPlayingNow)
+    {
+        // Move to next track
+        ++currentTrackIndex;
+
+        if (currentTrackIndex < track_list.size())
+        {
+            juce::Logger::writeToLog(
+                "Loading next track: " +
+                track_list[currentTrackIndex].getFullPathName());
+
+            transport.stop();
+            transport.setSource(nullptr); // detach old source
+
+            if (loadFile(track_list[currentTrackIndex]))
+            {
+                transport.start();
+            }
+        }
+        else
+        {
+            juce::Logger::writeToLog("Playlist finished");
+            stopTimer(); // nothing left to do
+        }
+    }
+
+    wasPlaying = isPlayingNow;
+}
+*/
