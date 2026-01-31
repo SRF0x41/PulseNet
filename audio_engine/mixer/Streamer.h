@@ -29,6 +29,7 @@ public:
 
 private:
     bool loadFile(const juce::File &file);
+    bool loadNextFile(const juce::File &file);
 
     juce::AudioDeviceManager deviceManager;
     juce::AudioFormatManager formatManager;

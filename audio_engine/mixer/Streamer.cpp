@@ -7,7 +7,7 @@ namespace mixer { // Put everything in the mixer namespace to avoid naming
 // ==========================
 // Constructor
 // ==========================
-Streamer::Streamer(const AudioTrack &trackA,const AudioTrack &trackB) {
+Streamer::Streamer(const AudioTrack &trackA, const AudioTrack &trackB) {
   formatManager.registerBasicFormats();
   trackA_file = juce::File(trackA.getSource());
   trackB_file = juce::File(trackB.getSource());
@@ -17,6 +17,7 @@ Streamer::Streamer(const AudioTrack &trackA,const AudioTrack &trackB) {
     //     return 1;
   }
 
+  // Setting up the system to play samples
   deviceManager.initialise(0, // no inputs
                            2, // stereo output
                            nullptr,
@@ -29,6 +30,8 @@ Streamer::Streamer(const AudioTrack &trackA,const AudioTrack &trackB) {
 
   audioSourcePlayer.setSource(this);
   deviceManager.addAudioCallback(&audioSourcePlayer);
+
+
 }
 
 // ==========================
@@ -76,6 +79,46 @@ bool Streamer::loadFile(const juce::File &file) {
   // sampleRate = ensures transport plays at correct speed
   transport.setSource(readerSource.get(), 0, nullptr,
                       readerSource->getAudioFormatReader()->sampleRate);
+
+  // Log success
+  juce::Logger::writeToLog("Successfully loaded: " + file.getFullPathName());
+  return true;
+}
+
+
+
+bool Streamer::loadNextFile(const juce::File &file){
+   // Check if the file exists on disk
+  if (!file.existsAsFile()) {
+    juce::Logger::writeToLog("File does not exist: " + file.getFullPathName());
+    return false; // Return false if the file can't be found
+  }
+
+  // Create an AudioFormatReader for the file.
+  // formatManager knows how to decode MP3, WAV, FLAC, etc.
+  std::unique_ptr<juce::AudioFormatReader> reader(
+      formatManager.createReaderFor(file));
+  if (reader == nullptr) {
+    juce::Logger::writeToLog("Failed to create AudioFormatReader for: " +
+                             file.getFullPathName());
+
+    // Optional debug info
+    juce::Logger::writeToLog("File extension: " + file.getFileExtension());
+    juce::Logger::writeToLog(
+        "Supported formats: MP3, WAV, AIFF, FLAC (registerBasicFormats())");
+
+    return false;
+  }
+
+  // Wrap the reader in an AudioFormatReaderSource, which is compatible with
+  // AudioTransportSource
+  nextReaderSource.reset(new juce::AudioFormatReaderSource(reader.release(), true));
+
+  // Connect the reader source to the transport.
+  // 0 = default read-ahead buffer, nullptr = default thread pool
+  // sampleRate = ensures transport plays at correct speed
+  nextTransport.setSource(nextReaderSource.get(), 0, nullptr,
+                      nextReaderSource->getAudioFormatReader()->sampleRate);
 
   // Log success
   juce::Logger::writeToLog("Successfully loaded: " + file.getFullPathName());
@@ -146,14 +189,9 @@ void Streamer::getNextAudioBlock(
   // Let the transport source fill the output buffer for playback
   // bufferToFill contains pointers to output channels and sample ranges
 
-  
   transport.getNextAudioBlock(bufferToFill);
 }
 void Streamer::timerCallback() {
-  
-
-
-
 
   if (!transport.isPlaying()) {
     if (!track_list.empty()) {
@@ -173,10 +211,8 @@ void Streamer::timerCallback() {
       stopTimer();
     }
   }
-
 }
-}
-
+} // namespace mixer
 
 /*
 // Pseudo-code
@@ -195,9 +231,8 @@ Triggering the Overlap
 
 Use your timer or check inside getNextAudioBlock():
 
-if (!crossfadeActive && remainingSamples(trackA) <= crossfadeTime * sampleRate) {
-    startTrackB();
-    crossfadeActive = true;
+if (!crossfadeActive && remainingSamples(trackA) <= crossfadeTime * sampleRate)
+{ startTrackB(); crossfadeActive = true;
 }
 
 
