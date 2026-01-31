@@ -12,6 +12,8 @@ namespace mixer {
 class Streamer : public juce::AudioSource, public juce::Timer {
 public:
     Streamer(const AudioTrack &trackA, const AudioTrack &trackB);
+    Streamer(const AudioTrack &trackA);
+    Streamer();
     ~Streamer() override;
 
     int addNext(const AudioTrack &track);
@@ -23,6 +25,20 @@ public:
     void prepareToPlay(int samplesPerBlock, double sampleRate) override;
     void releaseResources() override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) override;
+
+    // void prepareToPlay_transport(int samplesPerBlock, double sampleRate);
+    // void prepareToPlay_nextTransport(int samplesPerBlock, double sampleRate);
+    // void prepareToPlay_mixer(int samplesPerBlock, double sampleRate);
+
+
+    // prepareToPlay(512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
+
+
+    void setNextTrack();
+
+
+
+
 
     // Timer callback
     void timerCallback() override;
@@ -50,6 +66,8 @@ private:
     double crossfadeDuration = 30.0;
     
     bool crossfadeActive = false;
+
+    bool nextLoaded = false;
 
     juce::File trackA_file;
     juce::File trackB_file;

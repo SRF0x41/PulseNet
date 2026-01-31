@@ -6,51 +6,60 @@
 #include <thread>
 
 int main() {
-    // --------------------
-    // Create tracks
-    // --------------------
-    AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Call of Duty Black Ops - Number lady  [HD].mp3");
-    AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Holdin On.mp3");
+  // --------------------
+  // Create tracks
+  // --------------------
+  AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Call of "
+                    "Duty Black Ops - Number lady  [HD].mp3");
+  AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - "
+                    "Holdin On.mp3");
+  AudioTrack trackC(
+      "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Roosevelt - Moving On "
+      "(karlmixclub extended) version 1.mp3");
 
-    // --------------------
-    // Create streamer
-    // --------------------
-    mixer::Streamer streamer(trackA, trackB);
-    streamer.start();
+  // --------------------
+  // Create streamer
+  // --------------------
+  // mixer::Streamer streamer(trackA);
+  mixer::Streamer streamer;
+  streamer.addNext(trackA);
+  streamer.addNext(trackB);
+  streamer.addNext(trackC);
+  streamer.start();
 
-    // --------------------
-    // Console input thread
-    // --------------------
-    std::thread inputThread([&streamer]() {
-        std::string userInput;
-        std::cout << "Type something (type 'exit' to quit):" << std::endl;
+  // --------------------
+  // Console input thread
+  // --------------------
+  std::thread inputThread([&streamer]() {
+    std::string userInput;
+    std::cout << "Type something (type 'exit' to quit):" << std::endl;
 
-        while (true) {
-            std::cout << "> ";
-            std::getline(std::cin, userInput);
+    while (true) {
+      std::cout << "> ";
+      std::getline(std::cin, userInput);
 
-            if (userInput == "exit") {
-                std::cout << "Exiting..." << std::endl;
-                streamer.stop(); // stop music playback
-                break;
-            }
+      if (userInput == "exit") {
+        std::cout << "Exiting..." << std::endl;
+        streamer.stop(); // stop music playback
+        break;
+      }
 
-            std::cout << "You typed: " << userInput << std::endl;
-        }
-    });
+      std::cout << "You typed: " << userInput << std::endl;
+    }
+  });
 
-    // --------------------
-    // Run JUCE message loop in main thread
-    // --------------------
-    juce::MessageManager::getInstance()->runDispatchLoop();
+  // --------------------
+  // Run JUCE message loop in main thread
+  // --------------------
+  juce::MessageManager::getInstance()->runDispatchLoop();
 
-    // --------------------
-    // Wait for console thread to finish
-    // --------------------
-    if (inputThread.joinable())
-        inputThread.join();
+  // --------------------
+  // Wait for console thread to finish
+  // --------------------
+  if (inputThread.joinable())
+    inputThread.join();
 
-    return 0;
+  return 0;
 }
 
 // int main()
