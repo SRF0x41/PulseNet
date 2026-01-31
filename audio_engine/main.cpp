@@ -1,49 +1,56 @@
+#include "mixer/AudioTrack.h"
 #include "mixer/Streamer.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_core/juce_core.h>
+#include <thread>
 
 int main() {
-  juce::ConsoleApplication app;
+    // --------------------
+    // Create tracks
+    // --------------------
+    AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Disclosure - Latch ft. Sam Smith.mp3");
+    AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/usher ft will i am   OMG disco fries radio mix.mp3");
 
-  // Setup audio device manager
-  // juce::AudioDeviceManager deviceManager;
-  // deviceManager.initialise(
-  //     0, // no inputs
-  //     2, // stereo output
-  //     nullptr,
-  //     true, // select default device
-  //     {},   // preferred setup
-  //     nullptr);
+    // --------------------
+    // Create streamer
+    // --------------------
+    mixer::Streamer streamer(trackA, trackB);
+    streamer.start();
 
-  mixer::Streamer streamer("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/"
-                           "Flume - Holdin On.mp3");
+    // --------------------
+    // Console input thread
+    // --------------------
+    std::thread inputThread([&streamer]() {
+        std::string userInput;
+        std::cout << "Type something (type 'exit' to quit):" << std::endl;
 
-  // juce::File mp3File("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume
-  // - Holdin On.mp3"); if (!streamer.loadFile(mp3File))
-  // {
-  //     juce::Logger::writeToLog("Failed to load MP3");
-  //     return 1;
-  // }
+        while (true) {
+            std::cout << "> ";
+            std::getline(std::cin, userInput);
 
-  // // Prepare the streamer for playback
-  // streamer.prepareToPlay(
-  //     512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
-  streamer.start();
+            if (userInput == "exit") {
+                std::cout << "Exiting..." << std::endl;
+                streamer.stop(); // stop music playback
+                break;
+            }
 
-  // // Hook streamer into device callback
-  // juce::AudioSourcePlayer audioSourcePlayer;
-  // audioSourcePlayer.setSource(&streamer);
-  // deviceManager.addAudioCallback(&audioSourcePlayer);
+            std::cout << "You typed: " << userInput << std::endl;
+        }
+    });
 
-  streamer.addNext("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - "
-                   "Sleepless feat. Jezzabell Doran.mp3");
+    // --------------------
+    // Run JUCE message loop in main thread
+    // --------------------
+    juce::MessageManager::getInstance()->runDispatchLoop();
 
-  
+    // --------------------
+    // Wait for console thread to finish
+    // --------------------
+    if (inputThread.joinable())
+        inputThread.join();
 
-  // Run the message loop (this keeps the app alive and timers firing)
-  juce::MessageManager::getInstance()->runDispatchLoop();
-  return 0;
+    return 0;
 }
 
 // int main()

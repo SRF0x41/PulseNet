@@ -1,4 +1,5 @@
 #include "Streamer.h" // Include the header for this class definition
+#include "AudioTrack.h"
 
 namespace mixer { // Put everything in the mixer namespace to avoid naming
                   // collisions
@@ -6,15 +7,10 @@ namespace mixer { // Put everything in the mixer namespace to avoid naming
 // ==========================
 // Constructor
 // ==========================
-Streamer::Streamer(const std::string &trackA_path)  {
-  // Register standard audio formats (MP3, WAV, AIFF, FLAC, etc.)
-  // This allows the AudioFormatManager to create readers for these types.
+Streamer::Streamer(const AudioTrack &trackA,const AudioTrack &trackB) {
   formatManager.registerBasicFormats();
-
-  this->trackA_path = trackA_path;
-
-  // Load file onto the heap
-  trackA_file = juce::File(trackA_path);
+  trackA_file = juce::File(trackA.getSource());
+  trackB_file = juce::File(trackB.getSource());
 
   if (!loadFile(trackA_file)) {
     juce::Logger::writeToLog("Failed to load MP3");
@@ -33,19 +29,16 @@ Streamer::Streamer(const std::string &trackA_path)  {
 
   audioSourcePlayer.setSource(this);
   deviceManager.addAudioCallback(&audioSourcePlayer);
-  
-
 }
 
 // ==========================
 // Destructor
 // ==========================
 Streamer::~Streamer() {
-   stopTimer();
+  stopTimer();
   audioSourcePlayer.setSource(nullptr);
   deviceManager.removeAudioCallback(&audioSourcePlayer);
   transport.setSource(nullptr);
-
 }
 
 // ==========================
@@ -89,8 +82,8 @@ bool Streamer::loadFile(const juce::File &file) {
   return true;
 }
 
-int Streamer::addNext(const std::string &path) {
-  juce::File new_track = juce::File(path);
+int Streamer::addNext(const AudioTrack &track) {
+  juce::File new_track = juce::File(track.getSource());
   if (!new_track.existsAsFile()) {
     juce::Logger::writeToLog("Failed to add new track to track list: " +
                              new_track.getFullPathName());
@@ -134,7 +127,7 @@ bool Streamer::isPlaying() const {
 void Streamer::start() {
   // Starts streaming audio from the beginning (or current transport position)
   transport.start();
-  startTimerHz(10); 
+  startTimerHz(10);
 }
 
 // ==========================
@@ -152,70 +145,61 @@ void Streamer::getNextAudioBlock(
     const juce::AudioSourceChannelInfo &bufferToFill) {
   // Let the transport source fill the output buffer for playback
   // bufferToFill contains pointers to output channels and sample ranges
+
+  
   transport.getNextAudioBlock(bufferToFill);
 }
-void Streamer::timerCallback()
-{
-    if (!transport.isPlaying())
-    {
-        if (!track_list.empty())
-        {
-            juce::File next_track = track_list.front();
-            track_list.erase(track_list.begin());
+void Streamer::timerCallback() {
+  
 
-            juce::Logger::writeToLog("Loading next track: " + next_track.getFullPathName());
 
-            transport.stop();
-            transport.setSource(nullptr);
 
-            if (loadFile(next_track))
-                transport.start();
-        }
-        else
-        {
-            juce::Logger::writeToLog("Playlist finished");
-            stopTimer();
-        }
+
+  if (!transport.isPlaying()) {
+    if (!track_list.empty()) {
+      juce::File next_track = track_list.front();
+      track_list.erase(track_list.begin());
+
+      juce::Logger::writeToLog("Loading next track: " +
+                               next_track.getFullPathName());
+
+      transport.stop();
+      transport.setSource(nullptr);
+
+      if (loadFile(next_track))
+        transport.start();
+    } else {
+      juce::Logger::writeToLog("Playlist finished");
+      stopTimer();
     }
+  }
+
+}
+}
+
+
+/*
+// Pseudo-code
+if (crossfadeActive) {
+    // Both buffers have audio
+    for each channel c:
+        for each sample i:
+            output[i] = trackA[i] + trackB[i];
+} else {
+    // Only Track A
+    transportA.getNextAudioBlock(outputBuffer);
+}
+
+
+Triggering the Overlap
+
+Use your timer or check inside getNextAudioBlock():
+
+if (!crossfadeActive && remainingSamples(trackA) <= crossfadeTime * sampleRate) {
+    startTrackB();
+    crossfadeActive = true;
 }
 
 
 
-
-
-} // namespace mixer
-
-/*void Streamer::timerCallback()
-{
-    const bool isPlayingNow = transport.isPlaying();
-
-    // Detect "song just finished"
-    if (wasPlaying && !isPlayingNow)
-    {
-        // Move to next track
-        ++currentTrackIndex;
-
-        if (currentTrackIndex < track_list.size())
-        {
-            juce::Logger::writeToLog(
-                "Loading next track: " +
-                track_list[currentTrackIndex].getFullPathName());
-
-            transport.stop();
-            transport.setSource(nullptr); // detach old source
-
-            if (loadFile(track_list[currentTrackIndex]))
-            {
-                transport.start();
-            }
-        }
-        else
-        {
-            juce::Logger::writeToLog("Playlist finished");
-            stopTimer(); // nothing left to do
-        }
-    }
-
-    wasPlaying = isPlayingNow;
-}
 */
