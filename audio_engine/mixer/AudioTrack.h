@@ -34,4 +34,7 @@ private:
     const std::string source;  // File path or stream identifier
     float bpm;                 // Beats per minute
     float remainingTime;       // Seconds remaining
+
+    juce::AudioTransportSource transport;
+    std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
 };

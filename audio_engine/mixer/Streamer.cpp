@@ -112,17 +112,6 @@ void Streamer::prepareToPlay(int samplesPerBlock, double sampleRate) {
   transport.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
-// void Streamer::prepareToPlay_transport(int samplesPerBlock, double sampleRate) {
-//   transport.prepareToPlay(samplesPerBlock, sampleRate);
-// }
-// void Streamer::prepareToPlay_nextTransport(int samplesPerBlock,
-//                                            double sampleRate) {
-//   nextTransport.prepareToPlay(samplesPerBlock, sampleRate);
-// }
-
-// void Streamer::prepareToPlay_mixer(int samplesPerBlock, double sampleRate) {
-//   mixer.prepareToPlay(samplesPerBlock, sampleRate);
-// }
 
 void Streamer::releaseResources() { transport.releaseResources(); }
 
@@ -154,109 +143,53 @@ void Streamer::getNextAudioBlock(
   mixer.getNextAudioBlock(bufferToFill);
 }
 
-/*Streamer::Streamer(const AudioTrack &trackA) {
-  formatManager.registerBasicFormats();
-  trackA_file = juce::File(trackA.getSource());
-
-  if (!loadFile(trackA_file))
-    juce::Logger::writeToLog("Failed to load track A");
-
-  deviceManager.initialise(0, 2, nullptr, true, {}, nullptr);
-
-  // this->prepareToPlay(512,
-  // deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
-
-  this->prepareToPlay_transport(
-      512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
-  this->prepareToPlay_mixer(
-      512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
-
-  audioSourcePlayer.setSource(this);
-  deviceManager.addAudioCallback(&audioSourcePlayer);
-
-  mixer.addInputSource(&transport, false);
-
-
-
-
-bool Streamer::loadNextFile(const juce::File &file) {
-  if (!file.existsAsFile())
-    return false;
-
-  std::unique_ptr<juce::AudioFormatReader> reader(
-      formatManager.createReaderFor(file));
-  if (reader == nullptr)
-    return false;
-
-  nextReaderSource.reset(
-      new juce::AudioFormatReaderSource(reader.release(), true));
-  nextTransport.setSource(nextReaderSource.get(), 0, nullptr,
-                          nextReaderSource->getAudioFormatReader()->sampleRate);
-  return true;
-}
-}*/
 
 void setNextTrack();
 
-
 void Streamer::timerCallback() {
+    if (track_list.empty())
+        return;
 
-  if(track_list.empty()) return;
+    double remainingSeconds = transport.getLengthInSeconds() - transport.getCurrentPosition();
 
-  double remainingSeconds = transport.getLengthInSeconds() - transport.getCurrentPosition();
-  // if (!crossfadeActive && remainingSeconds <= crossfadeDuration) {
-  //   std::cout << "crossfade " << '\n';
-  //   crossfadeActive = true;
-  //   //nextTransport.start();
-  // }
+    // Load next track if not already loaded
+    if (!nextLoaded && !track_list.empty()) {
+        juce::File next_track = track_list.front();
+        track_list.erase(track_list.begin());
 
-  if (!nextLoaded) {
-    std::cout << "Loading Next Track" << '\n';
+        if (loadNextFile(next_track)) {
+            nextTransport.prepareToPlay(512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
+            mixer.addInputSource(&nextTransport, false);
+            nextLoaded = true;
+        } else {
+            juce::Logger::writeToLog("Failed to load next track: " + next_track.getFullPathName());
+        }
+    }
 
-    // Pull the next file from list
-    juce::File next_track = track_list.front();
-    track_list.erase(track_list.begin());
+    // If current track ended, swap in next track
+    if (transport.getCurrentPosition() >= transport.getLengthInSeconds() && nextLoaded) {
+        // Stop current transport (old track)
+        transport.stop();
+        std::cout << "Stoped transport " << '\n';
+        mixer.removeInputSource(&transport);
+        std::cout << "Removed transport source " << '\n';
 
-    loadNextFile(next_track);
+        // Swap nextTransport into transport
+        transport.setSource(nextReaderSource.get(), 0, nullptr, nextReaderSource->getAudioFormatReader()->sampleRate);
+        std::cout << "Set transport source to next " << '\n';
+        transport.prepareToPlay(512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
+        std::cout << "Preparing to play " << '\n';
+        transport.start();
 
-    nextTransport.prepareToPlay(512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
-    mixer.addInputSource(&nextTransport, false);
+        // Reset nextTransport for future tracks
+        nextReaderSource.reset();
+        nextLoaded = false;
 
-    nextLoaded = true;
-  }
-
-
-  if (transport.getCurrentPosition() >= transport.getLengthInSeconds()) {
-    std::cout << "end of song " << '\n';
-
-    
-    nextTransport.start();
-
-    //transport.setSource()
-    
-
-    
-    
-
-    //transport.stop();
-    //mixer.removeInputSource(&transport); // remove old track from mixer
-
-    // Transfer nextTransport's source into transport
-    // transport.setSource(nextReaderSource.get(), 0, nullptr, nextReaderSource->getAudioFormatReader()->sampleRate);
-    // transport.prepareToPlay(512, deviceManager.getCurrentAudioDevice()->getCurrentSampleRate());
-    // mixer.addInputSource(&transport, false);
-
-    // Reset nextTransport for future tracks
-    // nextReaderSource.reset();
-
-    nextLoaded = false;
-    //crossfadeActive = false;
+        // Keep mixer ready
+        mixer.addInputSource(&transport, false);
+    }
 }
 
-
-  // juce::File = track_list vec.back();
-  // track_list.pop_back();
-}
 
 } // namespace mixer
 
