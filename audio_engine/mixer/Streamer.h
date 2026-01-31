@@ -46,13 +46,17 @@ private:
 
     std::vector<juce::File> track_list;
 
+    
+    double crossfadeDuration = 30.0;
+    
     bool crossfadeActive = false;
-    double crossfadeDuration = 35.0;
-    double crossfadeProgress = 0.0;
-    double currentSampleRate = 44100.0;
 
     juce::File trackA_file;
     juce::File trackB_file;
+
+
+
+    juce::MixerAudioSource mixer;
 };
 
 } // namespace mixer
