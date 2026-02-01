@@ -1,40 +1,55 @@
 #pragma once
 
 #include <string>
+#include <memory>
+
+#include <juce_audio_basics/juce_audio_basics.h>
+#include <juce_audio_devices/juce_audio_devices.h>
+#include <juce_audio_formats/juce_audio_formats.h>
+
 
 // ====================
 // AudioTrack
 // ====================
 // Represents a single playable audio item.
-// Owns playback state but not the audio device.
-// This is a logical model, not a decoder implementation.
+// Owns its transport and reader lifetime.
+// Does NOT own audio devices.
 //
 class AudioTrack {
 public:
     // --------------------
     // Construction
     // --------------------
-    AudioTrack(const std::string &sourcePath)
-        : source(sourcePath), bpm(0.0f), remainingTime(0.0f)
-    {}
+    explicit AudioTrack(const std::string& sourcePath);
 
     // --------------------
     // Accessors
     // --------------------
-    const std::string& getSource() const { return source; } // Returns file path
-    float getBpm() const { return bpm; }                    // Get BPM
-    void setBpm(float newBpm) { bpm = newBpm; }            // Set BPM
-    float getRemainingTime() const { return remainingTime; } // Get remaining time in seconds
-    void setRemainingTime(float time) { remainingTime = time; } // Set remaining time
+    const std::string& getSource() const;
+
+    float getBpm() const;
+    void setBpm(float newBpm);
+
+    float getRemainingTime() const;
+    void setRemainingTime(float time);
+
+    juce::AudioTransportSource* getTransport();
+
+    // --------------------
+    // Transport control
+    // --------------------
+    void startTransport();
+    void stopTransport();
 
 private:
     // --------------------
     // Properties
     // --------------------
-    const std::string source;  // File path or stream identifier
-    float bpm;                 // Beats per minute
-    float remainingTime;       // Seconds remaining
+    const std::string source;   // File path
+    float bpm { 0.0f };
+    float remainingTime { 0.0f };
 
-    juce::AudioTransportSource transport;
+    juce::AudioFormatManager formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
+    juce::AudioTransportSource transport;
 };

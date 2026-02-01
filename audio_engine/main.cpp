@@ -1,5 +1,5 @@
 #include "mixer/AudioTrack.h"
-#include "mixer/Streamer.h"
+#include "mixer/Streamer_ver2.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_core/juce_core.h>
@@ -21,7 +21,7 @@ int main() {
   // Create streamer
   // --------------------
   // mixer::Streamer streamer(trackA);
-  mixer::Streamer streamer;
+   mixer::Streamer streamer;
   streamer.addNext(trackA);
   streamer.addNext(trackB);
   streamer.addNext(trackC);
