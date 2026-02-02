@@ -27,6 +27,11 @@ private:
     juce::MixerAudioSource mixer;
 
     std::vector<AudioTrack*> trackList;
+    int currentIndex = -1;
+
+
+    double timerStartSeconds = 0.0;
+
 };
 
 }

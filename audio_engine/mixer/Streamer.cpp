@@ -49,8 +49,47 @@ void Streamer::getNextAudioBlock(
 // --------------------
 void Streamer::timerCallback()
 {
-    // crossfade / scheduling logic goes here later
+    if (currentIndex < 0 || currentIndex >= (int)trackList.size())
+        return;
+
+    auto* currentTrack = trackList[currentIndex];
+    auto* transport = currentTrack->getTransport();
+
+    if (!transport)
+        return;
+
+    // If current track finished
+    if (!transport->isPlaying())
+    {
+        std::cout << "Finished: "
+                  << currentTrack->getSource() << '\n';
+
+        mixer.removeInputSource(transport);
+
+        currentIndex++;
+
+        // No more tracks
+        if (currentIndex >= (int)trackList.size())
+        {
+            std::cout << "Playlist finished\n";
+            stopTimer();
+            return;
+        }
+
+        // Start next track
+        auto* nextTransport = trackList[currentIndex]->getTransport();
+        if (!nextTransport)
+            return;
+
+        nextTransport->setPosition(0.0);
+        mixer.addInputSource(nextTransport, false);
+        nextTransport->start();
+
+        std::cout << "Now playing: "
+                  << trackList[currentIndex]->getSource() << '\n';
+    }
 }
+
 
 // --------------------
 // Playback control
@@ -73,14 +112,21 @@ bool Streamer::addNext(AudioTrack& track)
 
 void Streamer::start()
 {
-    startTimerHz(10);
+    if (trackList.empty())
+        return;
 
-    for (auto* track : trackList)
-    {
-        if (auto* t = track->getTransport())
-            t->start();
-    }
+    currentIndex = 0;
+
+    auto* transport = trackList[currentIndex]->getTransport();
+    if (!transport)
+        return;
+
+    transport->setPosition(0.0);
+    transport->start();
+
+    startTimerHz(10); // scheduler tick
 }
+
 
 void Streamer::stop()
 {

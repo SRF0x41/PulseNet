@@ -52,4 +52,11 @@ private:
     juce::AudioFormatManager formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
     juce::AudioTransportSource transport;
+
+
+    // --------------------
+    // Mix Properties
+    // --------------------
+    double timeAdvance = 0.0;
+    
 };
