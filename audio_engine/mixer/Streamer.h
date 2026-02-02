@@ -32,6 +32,10 @@ private:
 
     double timerStartSeconds = 0.0;
 
+    bool nextStarted = false;
+    double overlapSeconds = 10.0;
+
+
 };
 
 }

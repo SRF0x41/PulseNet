@@ -49,46 +49,68 @@ void Streamer::getNextAudioBlock(
 // --------------------
 void Streamer::timerCallback()
 {
-    if (currentIndex < 0 || currentIndex >= (int)trackList.size())
+    if (currentIndex < 0 ||
+        currentIndex >= (int)trackList.size())
         return;
 
-    auto* currentTrack = trackList[currentIndex];
-    auto* transport = currentTrack->getTransport();
+    AudioTrack* currentTrack = trackList[currentIndex];
+    auto* currentTransport = currentTrack->getTransport();
 
-    if (!transport)
+    if (!currentTransport)
         return;
 
-    // If current track finished
-    if (!transport->isPlaying())
+    const double remaining =
+        currentTransport->getLengthInSeconds()
+        - currentTransport->getCurrentPosition();
+
+    // Check if there's a NEXT track
+    if (!nextStarted &&
+        currentIndex + 1 < (int)trackList.size())
     {
-        std::cout << "Finished: "
-                  << currentTrack->getSource() << '\n';
+        AudioTrack* nextTrack = trackList[currentIndex + 1];
+        const double overlap =
+            nextTrack->getStartOverlapSeconds();
 
-        mixer.removeInputSource(transport);
+        // NEXT track decides when it enters
+        if (remaining <= overlap)
+        {
+            auto* nextTransport = nextTrack->getTransport();
+            if (nextTransport)
+            {
+                nextTransport->setPosition(0.0);
+                mixer.addInputSource(nextTransport, false);
+                nextTransport->start();
+
+                nextStarted = true;
+
+                std::cout << "Next track entered ("
+                          << overlap << "s rule): "
+                          << nextTrack->getSource() << '\n';
+            }
+        }
+    }
+
+    // Remove finished track
+    if (!currentTransport->isPlaying())
+    {
+        mixer.removeInputSource(currentTransport);
 
         currentIndex++;
+        nextStarted = false;
 
-        // No more tracks
         if (currentIndex >= (int)trackList.size())
         {
-            std::cout << "Playlist finished\n";
             stopTimer();
             return;
         }
 
-        // Start next track
-        auto* nextTransport = trackList[currentIndex]->getTransport();
-        if (!nextTransport)
-            return;
-
-        nextTransport->setPosition(0.0);
-        mixer.addInputSource(nextTransport, false);
-        nextTransport->start();
-
-        std::cout << "Now playing: "
+        std::cout << "Now primary: "
                   << trackList[currentIndex]->getSource() << '\n';
     }
 }
+
+
+
 
 
 // --------------------

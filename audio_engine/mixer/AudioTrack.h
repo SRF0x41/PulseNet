@@ -41,6 +41,10 @@ public:
     void startTransport();
     void stopTransport();
 
+    // overlap control
+    void setStartOverlapSeconds(double seconds);
+    double getStartOverlapSeconds() const;
+
 private:
     // --------------------
     // Properties
@@ -57,6 +61,5 @@ private:
     // --------------------
     // Mix Properties
     // --------------------
-    double timeAdvance = 0.0;
-    
+    double startOverlapSeconds = 10.0; 
 };

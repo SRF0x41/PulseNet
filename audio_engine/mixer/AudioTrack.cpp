@@ -54,3 +54,14 @@ void AudioTrack::startTransport(){
 void AudioTrack::stopTransport(){
     transport.stop();
 }
+
+void AudioTrack::setStartOverlapSeconds(double seconds)
+{
+    startOverlapSeconds = juce::jmax(0.0, seconds);
+}
+
+double AudioTrack::getStartOverlapSeconds() const
+{
+    return startOverlapSeconds;
+}
+
