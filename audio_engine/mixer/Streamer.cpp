@@ -43,36 +43,7 @@ void Streamer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFil
 {
     bufferToFill.clearActiveBufferRegion();
 
-    const int numSamples = bufferToFill.numSamples;
-
-    // === Sample-accurate scheduler ===
-    if (nextScheduled && samplesUntilNextStart >= 0)
-    {
-        if (samplesUntilNextStart < numSamples)
-        {
-            if (currentIndex + 1 < (int)trackList.size())
-            {
-                AudioTrack* nextTrack =
-                    trackList[currentIndex + 1];
-
-                if (auto* nextTransport = nextTrack->getTransport())
-                {
-                    nextTransport->setPosition(0.0);
-                    mixer.addInputSource(nextTransport, false);
-                    nextTransport->start();
-
-                    std::cout << "Sample-accurate start: "
-                              << nextTrack->getSource() << '\n';
-                }
-            }
-
-            samplesUntilNextStart = -1;
-        }
-        else
-        {
-            samplesUntilNextStart -= numSamples;
-        }
-    }
+   
 
     mixer.getNextAudioBlock(bufferToFill);
 }
@@ -82,49 +53,9 @@ void Streamer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFil
 // --------------------
 void Streamer::timerCallback()
 {
-    if (currentIndex < 0 ||
-        currentIndex >= (int)trackList.size())
-        return;
+    
 
-    AudioTrack* currentTrack = trackList[currentIndex];
-    auto* currentTransport = currentTrack->getTransport();
-
-    if (!currentTransport)
-        return;
-
-    // Schedule NEXT track based on NEXT track's rule
-    if (!nextScheduled && currentIndex + 1 < (int)trackList.size())
-    {
-        AudioTrack* nextTrack = trackList[currentIndex + 1];
-        const double overlapSeconds = nextTrack->getStartOverlapSeconds();
-        const double secondsUntilNextStart = currentTransport->getLengthInSeconds() - overlapSeconds;
-        samplesUntilNextStart = static_cast<int64_t>(secondsUntilNextStart*currentSampleRate);
-        nextScheduled = true;
-
-        std::cout << "Scheduled next track in "
-                      << secondsUntilNextStart
-                      << " seconds\n";
-        
-    }
-
-    // Advance playlist when current ends
-    if (!currentTransport->isPlaying())
-    {
-        mixer.removeInputSource(currentTransport);
-
-        currentIndex++;
-        nextScheduled = false;
-        samplesUntilNextStart = -1;
-
-        if (currentIndex >= (int)trackList.size())
-        {
-            stopTimer();
-            return;
-        }
-
-        std::cout << "Now primary: "
-                  << trackList[currentIndex]->getSource() << '\n';
-    }
+    
 }
 
 // --------------------

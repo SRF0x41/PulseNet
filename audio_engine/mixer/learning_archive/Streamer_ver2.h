@@ -31,6 +31,7 @@ public:
     // Timer
     void timerCallback() override;
 
+
 private:
     juce::AudioDeviceManager deviceManager;
     juce::AudioSourcePlayer audioSourcePlayer;
@@ -38,14 +39,13 @@ private:
 
     std::vector<AudioTrack*> trackList;
 
-    int currentIndex = -1;
 
     // sample-accurate scheduling
     bool nextScheduled = false;
     int64_t samplesUntilNextStart = -1;
     double currentSampleRate = 44100.0;
 
-    int64_t globalSamplePosition = 0;
+
 };
 
 } // namespace mixer

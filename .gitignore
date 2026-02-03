@@ -103,8 +103,9 @@ tmp/
 
 
 # rips
-get_audio/
+get_audio/tracks/
 
+get_audio/get_track.py
 
 JUCE
 
