@@ -65,3 +65,10 @@ double AudioTrack::getStartOverlapSeconds() const
     return startOverlapSeconds;
 }
 
+int64_t AudioTrack::getTotalSamples(double sampleRate)
+{
+    return static_cast<int64_t>(
+        transport.getLengthInSeconds() * sampleRate
+    );
+}
+

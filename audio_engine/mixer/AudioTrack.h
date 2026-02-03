@@ -8,6 +8,7 @@
 #include <juce_audio_formats/juce_audio_formats.h>
 
 
+
 // ====================
 // AudioTrack
 // ====================
@@ -49,6 +50,10 @@ public:
     void setStartTransitionDuration(double seconds);
     void setEndTransitionDuration(double seconds);
 
+    // Global sample timeline
+
+    int64_t getTotalSamples(double sampleRate);
+
 
 private:
     // --------------------
@@ -72,6 +77,11 @@ private:
     // basic crossfading
     double begin_transitionDuration = 0.0;
     double end_transitionDuration = 0.0;
+
+
+    // Global sample scheduling
+    double currentSampleRate = 44100.0;
+
 
 
 

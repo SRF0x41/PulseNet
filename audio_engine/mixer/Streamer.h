@@ -31,6 +31,9 @@ public:
     // Timer
     void timerCallback() override;
 
+    // Global timeline
+    double getGlobalPositionSeconds();
+
 private:
     juce::AudioDeviceManager deviceManager;
     juce::AudioSourcePlayer audioSourcePlayer;
