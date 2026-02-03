@@ -39,8 +39,7 @@ void Streamer::releaseResources()
     mixer.releaseResources();
 }
 
-void Streamer::getNextAudioBlock(
-    const juce::AudioSourceChannelInfo& bufferToFill)
+void Streamer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
     bufferToFill.clearActiveBufferRegion();
 
@@ -94,26 +93,17 @@ void Streamer::timerCallback()
         return;
 
     // Schedule NEXT track based on NEXT track's rule
-    if (!nextScheduled &&
-        currentIndex + 1 < (int)trackList.size())
+    if (!nextScheduled && currentIndex + 1 < (int)trackList.size())
     {
         AudioTrack* nextTrack = trackList[currentIndex + 1];
-
         const double overlapSeconds = nextTrack->getStartOverlapSeconds();
-
-     
-
         const double secondsUntilNextStart = currentTransport->getLengthInSeconds() - overlapSeconds;
-
         samplesUntilNextStart = static_cast<int64_t>(secondsUntilNextStart*currentSampleRate);
-
-
-
         nextScheduled = true;
 
         std::cout << "Scheduled next track in "
-                      << samplesUntilNextStart
-                      << " samples\n";
+                      << secondsUntilNextStart
+                      << " seconds\n";
         
     }
 
@@ -169,7 +159,7 @@ void Streamer::start()
     mixer.addInputSource(transport, false);
     transport->start();
 
-    startTimerHz(20); // scheduler tick (not timing-critical)
+    startTimerHz(10); // scheduler tick (not timing-critical)
 }
 
 void Streamer::stop()

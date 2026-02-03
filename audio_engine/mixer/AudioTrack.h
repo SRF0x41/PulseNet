@@ -45,6 +45,11 @@ public:
     void setStartOverlapSeconds(double seconds);
     double getStartOverlapSeconds() const;
 
+    // basic crossfading
+    void setStartTransitionDuration(double seconds);
+    void setEndTransitionDuration(double seconds);
+
+
 private:
     // --------------------
     // Properties
@@ -61,5 +66,13 @@ private:
     // --------------------
     // Mix Properties
     // --------------------
-    double startOverlapSeconds = 10.0; 
+    double startOverlapSeconds = 0.0; 
+    float gain = 1.0f; // default full volume
+
+    // basic crossfading
+    double begin_transitionDuration = 0.0;
+    double end_transitionDuration = 0.0;
+
+
+
 };
