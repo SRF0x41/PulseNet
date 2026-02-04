@@ -72,84 +72,6 @@ void Streamer::getNextAudioBlock(
 }
 
 /*
-void Streamer::getNextAudioBlock(const juce::AudioSourceChannelInfo&
-bufferToFill)
-{
-    const int numSamples = bufferToFill.numSamples;
-    const int64_t bufferStart = globalSamplePosition;
-    const int64_t bufferEnd   = bufferStart + numSamples;
-
-    bufferToFill.clearActiveBufferRegion();
-
-    // Check each track
-    for (auto* track : trackList)
-    {
-        if (!track->isPlaying())
-        {
-            int64_t startSample = track->getScheduledStartSample();
-            if (startSample >= bufferStart && startSample < bufferEnd)
-            {
-                mixer.addInputSource(track->getTransport(), false);
-                track->startTransport();
-            }
-        }
-    }
-
-    globalSamplePosition += numSamples;
-    mixer.getNextAudioBlock(bufferToFill);
-}
-
-or
-
-struct TimelineEvent {
-    int64_t startSample;        // When this event triggers
-    AudioTrack* track;          // Which track
-    enum EventType { START, FADE_IN, FADE_OUT } type;
-    double durationSamples;     // Optional: for fades
-};
-
-std::vector<TimelineEvent> timeline;
-size_t currentEventIndex = 0;
-int64_t globalSamplePosition = 0;
-
-
-void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
-    int64_t blockStart = globalSamplePosition;
-    int64_t blockEnd = globalSamplePosition + bufferToFill.numSamples;
-
-    // Check all events that occur in this block
-    while (currentEventIndex < timeline.size() &&
-           timeline[currentEventIndex].startSample < blockEnd) {
-
-        auto& ev = timeline[currentEventIndex];
-
-        int64_t offsetInBlock = ev.startSample - blockStart;
-
-        if (offsetInBlock >= 0 && offsetInBlock < bufferToFill.numSamples) {
-            switch(ev.type) {
-                case TimelineEvent::START:
-                    ev.track->getTransport()->setPosition(0.0);
-                    mixer.addInputSource(ev.track->getTransport(), false);
-                    ev.track->startTransport();
-                    break;
-
-                case TimelineEvent::FADE_IN:
-                    ev.track->startFadeIn(ev.durationSamples);
-                    break;
-
-                case TimelineEvent::FADE_OUT:
-                    ev.track->startFadeOut(ev.durationSamples);
-                    break;
-            }
-        }
-
-        currentEventIndex++;
-    }
-
-    mixer.getNextAudioBlock(bufferToFill);
-    globalSamplePosition += bufferToFill.numSamples;
-}
-
 
 */
 
@@ -190,16 +112,7 @@ bool Streamer::addNext(AudioTrack &track) {
 }
 
 void Streamer::start() {
-  // if (trackList.empty())
-  //     return;
 
-  // auto* transport = globalTimelineEvents
-  // if (!transport)
-  //     return;
-
-  // transport->setPosition(0.0);
-  // mixer.addInputSource(transport, false);
-  // transport->start();
 
   startTimerHz(10); // scheduler tick (not timing-critical)
 }
@@ -207,14 +120,7 @@ void Streamer::start() {
 void Streamer::stop() {
   stopTimer();
 
-  // for (auto* track : trackList)
-  // {
-  //     if (auto* t = track->getTransport())
-  //         t->stop();
-  // }
-
-  // mixer.removeAllInputs();
-  // trackList.clear();
+ mixer.removeAllInputs();
 }
 
 } // namespace mixer
