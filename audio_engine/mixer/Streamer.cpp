@@ -6,61 +6,74 @@ namespace mixer {
 // --------------------
 // Construction
 // --------------------
-Streamer::Streamer()
-{
-    deviceManager.initialise(0, 2, nullptr, true);
+Streamer::Streamer() {
+  deviceManager.initialise(0, 2, nullptr, true);
 
-    audioSourcePlayer.setSource(this);
-    deviceManager.addAudioCallback(&audioSourcePlayer);
+  audioSourcePlayer.setSource(this);
+  deviceManager.addAudioCallback(&audioSourcePlayer);
 }
 
-Streamer::~Streamer()
-{
-    stop();
+Streamer::~Streamer() {
+  stop();
 
-    audioSourcePlayer.setSource(nullptr);
-    deviceManager.removeAudioCallback(&audioSourcePlayer);
+  audioSourcePlayer.setSource(nullptr);
+  deviceManager.removeAudioCallback(&audioSourcePlayer);
 
-    mixer.releaseResources();
+  mixer.releaseResources();
 }
 
 // --------------------
 // AudioSource
 // --------------------
-void Streamer::prepareToPlay(int samplesPerBlock,
-                             double sampleRate)
-{
-    currentSampleRate = sampleRate;
-    mixer.prepareToPlay(samplesPerBlock, sampleRate);
+void Streamer::prepareToPlay(int samplesPerBlock, double sampleRate) {
+  currentSampleRate = sampleRate;
+  mixer.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
-void Streamer::releaseResources()
-{
-    mixer.releaseResources();
+void Streamer::releaseResources() { mixer.releaseResources(); }
+
+double Streamer::getGlobalPositionSeconds() {
+  if (currentSampleRate <= 0.0)
+    return 0.0;
+
+  return static_cast<double>(globalSamplePosition) / currentSampleRate;
 }
 
-
-double Streamer::getGlobalPositionSeconds()
-{
-    if (currentSampleRate <= 0.0)
-        return 0.0;
-
-    return static_cast<double>(globalSamplePosition) / currentSampleRate;
+double Streamer::getSumSamplesSeconds() {
+  return static_cast<double>(sumTrackSamples) / currentSampleRate;
 }
 
+void Streamer::getNextAudioBlock(
+    const juce::AudioSourceChannelInfo &bufferToFill) {
+  bufferToFill.clearActiveBufferRegion();
 
-void Streamer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
-{
-    
-    bufferToFill.clearActiveBufferRegion();
+  int64_t blockStart = globalSamplePosition;
+  int64_t blockEnd = globalSamplePosition + bufferToFill.numSamples;
 
-   
-    globalSamplePosition += bufferToFill.numSamples;
-    mixer.getNextAudioBlock(bufferToFill);
+  while (currentEventIndex < globalTimelineEvents.size()) {
+    auto &ev = globalTimelineEvents[currentEventIndex];
+
+    if (ev.startSample >= blockEnd)
+      break;
+
+    if (ev.startSample >= blockStart) {
+      std::cout << "Starting " << ev.track->getSource() << '\n';
+      auto *t = ev.track->getTransport();
+      t->setPosition(0.0);
+      mixer.addInputSource(t, false);
+      t->start();
+    }
+
+    ++currentEventIndex;
+  }
+
+  mixer.getNextAudioBlock(bufferToFill);
+  globalSamplePosition += bufferToFill.numSamples;
 }
 
 /*
-void Streamer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
+void Streamer::getNextAudioBlock(const juce::AudioSourceChannelInfo&
+bufferToFill)
 {
     const int numSamples = bufferToFill.numSamples;
     const int64_t bufferStart = globalSamplePosition;
@@ -86,7 +99,7 @@ void Streamer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFil
     mixer.getNextAudioBlock(bufferToFill);
 }
 
-or 
+or
 
 struct TimelineEvent {
     int64_t startSample;        // When this event triggers
@@ -121,11 +134,11 @@ void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
                     break;
 
                 case TimelineEvent::FADE_IN:
-                    ev.track->startFadeIn(ev.durationSamples); 
+                    ev.track->startFadeIn(ev.durationSamples);
                     break;
 
                 case TimelineEvent::FADE_OUT:
-                    ev.track->startFadeOut(ev.durationSamples); 
+                    ev.track->startFadeOut(ev.durationSamples);
                     break;
             }
         }
@@ -143,60 +156,65 @@ void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
 // --------------------
 // Timer (scheduler)
 // --------------------
-void Streamer::timerCallback()
-{
-    
-
-    
-}
+void Streamer::timerCallback() {}
 
 // --------------------
 // Playback control
 // --------------------
-bool Streamer::addNext(AudioTrack& track)
-{
-    if (!track.getTransport())
-        return false;
+bool Streamer::addNext(AudioTrack &track) {
+  if (!track.getTransport())
+    return false;
 
-    trackList.push_back(&track);
+  TimelineEvent new_track;
+  new_track.track = &track;
+  new_track.durationSamples = track.getTotalSamples(currentSampleRate);
+  if (sumTrackSamples <= 0) {
+    new_track.startSample = 0;
+  } else {
+    new_track.startSample =
+        sumTrackSamples - track.getOverlapSamples(currentSampleRate);
+  }
 
-    std::cout << "Queued: "
-              << track.getSource() << '\n';
-    return true;
+  globalTimelineEvents.push_back(new_track);
+
+  sumTrackSamples += track.getTotalSamples(currentSampleRate) -
+                     track.getOverlapSamples(currentSampleRate);
+
+  std::sort(globalTimelineEvents.begin(), globalTimelineEvents.end(),
+            [](auto &a, auto &b) { return a.startSample < b.startSample; });
+
+  std::cout << "Queued: " << track.getSource() << " at "
+            << new_track.startSample << '\n';
+
+  return true;
 }
 
-void Streamer::start()
-{
-    if (trackList.empty())
-        return;
+void Streamer::start() {
+  // if (trackList.empty())
+  //     return;
 
-    currentIndex = 0;
-    nextScheduled = false;
-    samplesUntilNextStart = -1;
+  // auto* transport = globalTimelineEvents
+  // if (!transport)
+  //     return;
 
-    auto* transport = trackList[0]->getTransport();
-    if (!transport)
-        return;
+  // transport->setPosition(0.0);
+  // mixer.addInputSource(transport, false);
+  // transport->start();
 
-    transport->setPosition(0.0);
-    mixer.addInputSource(transport, false);
-    transport->start();
-
-    startTimerHz(10); // scheduler tick (not timing-critical)
+  startTimerHz(10); // scheduler tick (not timing-critical)
 }
 
-void Streamer::stop()
-{
-    stopTimer();
+void Streamer::stop() {
+  stopTimer();
 
-    for (auto* track : trackList)
-    {
-        if (auto* t = track->getTransport())
-            t->stop();
-    }
+  // for (auto* track : trackList)
+  // {
+  //     if (auto* t = track->getTransport())
+  //         t->stop();
+  // }
 
-    mixer.removeAllInputs();
-    trackList.clear();
+  // mixer.removeAllInputs();
+  // trackList.clear();
 }
 
 } // namespace mixer

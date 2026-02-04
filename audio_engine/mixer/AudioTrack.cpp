@@ -1,4 +1,5 @@
 #include "AudioTrack.h"
+#include <cstdint>
 
 // --------------------
 // Construction
@@ -72,3 +73,9 @@ int64_t AudioTrack::getTotalSamples(double sampleRate)
     );
 }
 
+
+int64_t AudioTrack::getOverlapSamples(double sampleRate){
+    return static_cast<int64_t>(
+        startOverlapSeconds * sampleRate
+    );
+}

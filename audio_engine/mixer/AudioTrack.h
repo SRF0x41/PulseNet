@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <memory>
 
@@ -53,6 +54,7 @@ public:
     // Global sample timeline
 
     int64_t getTotalSamples(double sampleRate);
+    int64_t getOverlapSamples(double sampleRate);
 
 
 private:
