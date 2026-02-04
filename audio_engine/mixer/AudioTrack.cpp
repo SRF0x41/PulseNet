@@ -25,6 +25,9 @@ AudioTrack::AudioTrack(const std::string& sourcePath)
         nullptr,
         reader->sampleRate
     );
+
+    // gainSource = std::make_unique<juce::GainAudioSource>(&transport, false);
+    // gainSource->setGain(1.0f);
 }
 
 
@@ -79,3 +82,25 @@ int64_t AudioTrack::getOverlapSamples(double sampleRate){
         startOverlapSeconds * sampleRate
     );
 }
+
+
+void AudioTrack::fadeIn(double seconds)
+{
+    // const float start = 0.0f;
+    // const float end   = 1.0f;
+
+    // gainSource->setGain(start);
+    // gainSource->setRampDuration(seconds);
+    // gainSource->setGain(end);
+}
+
+void AudioTrack::fadeOut(double seconds)
+{
+    // gainSource->setRampDuration(seconds);
+    // gainSource->setGain(0.0f);
+}
+
+// juce::AudioSource* AudioTrack::getAudioSource()
+// {
+//     return gainSource.get();
+// }

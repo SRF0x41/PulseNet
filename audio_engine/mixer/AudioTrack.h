@@ -7,6 +7,8 @@
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_audio_formats/juce_audio_formats.h>
+#include <juce_audio_utils/juce_audio_utils.h>
+
 
 
 
@@ -56,6 +58,11 @@ public:
     int64_t getTotalSamples(double sampleRate);
     int64_t getOverlapSamples(double sampleRate);
 
+    void fadeIn(double seconds);
+    void fadeOut(double seconds);
+
+    //juce::AudioSource* getAudioSource(); // returns gain source
+
 
 private:
     // --------------------
@@ -68,6 +75,7 @@ private:
     juce::AudioFormatManager formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
     juce::AudioTransportSource transport;
+
 
 
     // --------------------
