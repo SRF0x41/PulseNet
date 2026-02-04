@@ -26,8 +26,7 @@ AudioTrack::AudioTrack(const std::string& sourcePath)
         reader->sampleRate
     );
 
-    // gainSource = std::make_unique<juce::GainAudioSource>(&transport, false);
-    // gainSource->setGain(1.0f);
+   //transport.setGain(0.1f);
 }
 
 
