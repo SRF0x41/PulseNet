@@ -4,30 +4,21 @@
 // --------------------
 // Construction
 // --------------------
-AudioTrack::AudioTrack(const std::string& sourcePath)
-    : source(sourcePath)
-{
-    formatManager.registerBasicFormats();
+AudioTrack::AudioTrack(const std::string &sourcePath) : source(sourcePath) {
+  formatManager.registerBasicFormats();
 
-    juce::File file(source);
-    if (!file.existsAsFile())
-        return;
+  juce::File file(source);
+  if (!file.existsAsFile())
+    return;
 
-    auto* reader = formatManager.createReaderFor(file);
-    if (!reader)
-        return;
+  auto *reader = formatManager.createReaderFor(file);
+  if (!reader)
+    return;
 
-    readerSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
+  readerSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
 
-    transport.setSource(
-        readerSource.get(),
-        0,
-        nullptr,
-        reader->sampleRate
-    );
-
+  transport.setSource(readerSource.get(), 0, nullptr, reader->sampleRate);
 }
-
 
 // --------------------
 // Accessors
@@ -42,61 +33,29 @@ float AudioTrack::getRemainingTime() const { return remainingTime; }
 
 void AudioTrack::setRemainingTime(float time) { remainingTime = time; }
 
+juce::AudioTransportSource *AudioTrack::getTransport() { return &transport; }
 
-juce::AudioTransportSource* AudioTrack::getTransport()
-{
-    return &transport;
+void AudioTrack::startTransport() { transport.start(); }
+void AudioTrack::stopTransport() { transport.stop(); }
+
+void AudioTrack::setStartOverlapSeconds(double seconds) {
+  startOverlapSeconds = juce::jmax(0.0, seconds);
 }
 
-
-
-void AudioTrack::startTransport(){
-    transport.start();
-}
-void AudioTrack::stopTransport(){
-    transport.stop();
+double AudioTrack::getStartOverlapSeconds() const {
+  return startOverlapSeconds;
 }
 
-void AudioTrack::setStartOverlapSeconds(double seconds)
-{
-    startOverlapSeconds = juce::jmax(0.0, seconds);
+int64_t AudioTrack::getTotalSamples(double sampleRate) {
+  return static_cast<int64_t>(transport.getLengthInSeconds() * sampleRate);
 }
 
-double AudioTrack::getStartOverlapSeconds() const
-{
-    return startOverlapSeconds;
+int64_t AudioTrack::getOverlapSamples(double sampleRate) {
+  return static_cast<int64_t>(startOverlapSeconds * sampleRate);
 }
 
-int64_t AudioTrack::getTotalSamples(double sampleRate)
-{
-    return static_cast<int64_t>(
-        transport.getLengthInSeconds() * sampleRate
-    );
-}
-
-
-int64_t AudioTrack::getOverlapSamples(double sampleRate){
-    return static_cast<int64_t>(
-        startOverlapSeconds * sampleRate
-    );
-}
-
-
-void AudioTrack::fadeIn(double seconds)
-{
-    // const float start = 0.0f;
-    // const float end   = 1.0f;
-
-    // gainSource->setGain(start);
-    // gainSource->setRampDuration(seconds);
-    // gainSource->setGain(end);
-}
-
-void AudioTrack::fadeOut(double seconds)
-{
-    // gainSource->setRampDuration(seconds);
-    // gainSource->setGain(0.0f);
-}
+void AudioTrack::setFadeInDuration(double seconds) {}
+void AudioTrack::setFadeOutDuration(double seconds) {}
 
 // juce::AudioSource* AudioTrack::getAudioSource()
 // {
