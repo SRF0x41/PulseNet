@@ -10,6 +10,9 @@ int main() {
   // Create tracks
   // --------------------
   AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/echohotel.mp3");
+  trackA.setFadeInDuration(10);
+  trackA.setFadeOutDuration(10);
+
   AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/gong.mp3");
   trackB.setStartOverlapSeconds(10);
   AudioTrack trackD("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");

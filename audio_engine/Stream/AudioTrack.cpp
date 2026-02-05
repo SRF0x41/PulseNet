@@ -54,10 +54,42 @@ int64_t AudioTrack::getOverlapSamples(double sampleRate) {
   return static_cast<int64_t>(startOverlapSeconds * sampleRate);
 }
 
-void AudioTrack::setFadeInDuration(double seconds) {}
-void AudioTrack::setFadeOutDuration(double seconds) {}
+void AudioTrack::setFadeInDuration(double seconds) {
+  fadeInDuration_samples = static_cast<int64_t>(seconds * currentSampleRate);
+  transport.setGain(0.0f);
 
-// juce::AudioSource* AudioTrack::getAudioSource()
-// {
-//     return gainSource.get();
-// }
+  if (fadeInDuration_samples > 0)
+    fadeInGainRate =
+        1.0f / static_cast<float>(fadeInDuration_samples); // float division
+  else
+    fadeInGainRate = 1.0f;
+}
+
+void AudioTrack::setFadeOutDuration(double seconds) {
+  fadeOutDuration_samples = static_cast<int64_t>(seconds * currentSampleRate);
+
+  if (fadeOutDuration_samples > 0)
+    fadeOutGainRate =
+        1.0f / static_cast<float>(fadeOutDuration_samples); // float division
+  else
+    fadeOutGainRate = 1.0f;
+}
+
+float AudioTrack::getFadeInGainRate() { return fadeInGainRate; }
+
+float AudioTrack::getFadeOutGainRate() { return fadeOutGainRate; }
+
+int64_t AudioTrack::getFadeInDuration_samples() {
+  return fadeInDuration_samples;
+}
+int64_t AudioTrack::getFadeOutDuration_samples() {
+  return fadeOutDuration_samples;
+}
+
+void AudioTrack::setGain(float gain) {
+  transport.setGain(gain); // JUCE AudioTransportSource has a setGain() method
+}
+
+float AudioTrack::getGain(){
+    return gain;
+}

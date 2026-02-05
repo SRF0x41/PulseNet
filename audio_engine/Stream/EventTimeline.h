@@ -17,10 +17,15 @@ public:
 
   TimelineEvent* getEvent( int64_t endBlock);
 
+  void startFade();
+
 private:
   double currentSampleRate;
 
   int64_t sumTrackSamples = -1;
   std::vector<TimelineEvent> timeline;
   size_t eventIndex = 0;
+
+  std::vector<FadeState> fadeTimeline;
+  size_t fadeIndex = 0;
 };

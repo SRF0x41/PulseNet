@@ -19,69 +19,97 @@ struct TimelineEvent {
 
   };*/
 bool EventTimeline::addTrack(AudioTrack &track) {
-    if (!track.getTransport())
-        return false;
+  if (!track.getTransport())
+    return false;
 
-    // --- Start event ---
-    TimelineEvent START_track;
-    START_track.type = TimelineEvent::START;
-    START_track.track = &track;
-    if (sumTrackSamples <= 0) {
-        START_track.eventSample = 0;
-    } else {
-        START_track.eventSample =
-            sumTrackSamples - track.getOverlapSamples(currentSampleRate);
+  // --- Start event ---
+  TimelineEvent START_track;
+  START_track.type = TimelineEvent::START;
+  START_track.track = &track;
+  if (sumTrackSamples <= 0) {
+    START_track.eventSample = 0;
+  } else {
+    START_track.eventSample =
+        sumTrackSamples - track.getOverlapSamples(currentSampleRate);
+  }
+  timeline.push_back(START_track);
+
+  // Update sum of track samples
+  sumTrackSamples += track.getTotalSamples(currentSampleRate) -
+                     track.getOverlapSamples(currentSampleRate);
+
+  // --- End event ---
+  TimelineEvent STOP_track;
+  STOP_track.type = TimelineEvent::STOP;
+  STOP_track.track = &track;
+  STOP_track.eventSample = sumTrackSamples;
+  timeline.push_back(STOP_track);
+
+  // --- Fade in event ---
+  if (track.getFadeInDuration_samples() > 0) {
+    TimelineEvent FADE_IN_track;
+    FADE_IN_track.type = TimelineEvent::FADE_IN;
+    FADE_IN_track.eventSample = START_track.eventSample;
+    FADE_IN_track.track = &track;
+    timeline.push_back(FADE_IN_track);
+  }
+
+  // --- Fade out event ---
+  if(track.getFadeOutDuration_samples() > 0){
+    TimelineEvent FADE_OUT_event;
+    FADE_OUT_event.type = TimelineEvent::FADE_OUT;
+    FADE_OUT_event.eventSample = STOP_track.eventSample - track.getFadeOutDuration_samples();
+    FADE_OUT_event.track = &track;
+    timeline.push_back(FADE_OUT_event);
+
+  }
+
+  // Sort timeline by eventSample
+  std::sort(timeline.begin(), timeline.end(),
+            [](const TimelineEvent &a, const TimelineEvent &b) {
+              return a.eventSample < b.eventSample;
+            });
+
+  // --- Print all events ---
+  std::cout << "Timeline after adding track: " << track.getSource() << "\n";
+  for (const auto &ev : timeline) {
+    std::string typeStr;
+    switch (ev.type) {
+    case TimelineEvent::START:
+      typeStr = "START";
+      break;
+    case TimelineEvent::STOP:
+      typeStr = "STOP";
+      break;
+    case TimelineEvent::FADE_IN:
+      typeStr = "FADE_IN";
+      break;
+    case TimelineEvent::FADE_OUT:
+      typeStr = "FADE_OUT";
+      break;
+    default:
+      typeStr = "UNKNOWN";
+      break;
     }
-    timeline.push_back(START_track);
 
-    // Update sum of track samples
-    sumTrackSamples += track.getTotalSamples(currentSampleRate) -
-                       track.getOverlapSamples(currentSampleRate);
+    std::cout << "Event: " << typeStr
+              << " | Track: " << (ev.track ? ev.track->getSource() : "null")
+              << " | Sample: " << ev.eventSample << "\n";
+  }
 
-    // --- End event ---
-    TimelineEvent STOP_track;
-    STOP_track.type = TimelineEvent::STOP;
-    STOP_track.track = &track;
-    STOP_track.eventSample = sumTrackSamples;
-    timeline.push_back(STOP_track);
-
-    // Sort timeline by eventSample
-    std::sort(timeline.begin(), timeline.end(),
-              [](const TimelineEvent &a, const TimelineEvent &b) {
-                  return a.eventSample < b.eventSample;
-              });
-
-    // --- Print all events ---
-    std::cout << "Timeline after adding track: " << track.getSource() << "\n";
-    for (const auto &ev : timeline) {
-        std::string typeStr;
-        switch (ev.type) {
-            case TimelineEvent::START:     typeStr = "START"; break;
-            case TimelineEvent::STOP:      typeStr = "STOP"; break;
-            case TimelineEvent::FADE_IN:   typeStr = "FADE_IN"; break;
-            case TimelineEvent::FADE_OUT:  typeStr = "FADE_OUT"; break;
-            default:                       typeStr = "UNKNOWN"; break;
-        }
-
-        std::cout << "Event: " << typeStr
-                  << " | Track: " << (ev.track ? ev.track->getSource() : "null")
-                  << " | Sample: " << ev.eventSample << "\n";
-    }
-
-    return true;
+  return true;
 }
 
+TimelineEvent *EventTimeline::getEvent(int64_t endBlock) {
+  if (eventIndex >= timeline.size()) {
+    return nullptr; // no more events
+  }
 
-TimelineEvent* EventTimeline::getEvent(int64_t endBlock) {
-    if (eventIndex >= timeline.size()) {
-        return nullptr; // no more events
-    }
+  if (timeline[eventIndex].eventSample >= endBlock) {
+    return nullptr; // event is beyond this block
+  }
 
-    if (timeline[eventIndex].eventSample >= endBlock) {
-        return nullptr; // event is beyond this block
-    }
-
-    // Event is valid for this block
-    ++eventIndex;
-    return &timeline[eventIndex - 1];
+  // Event is valid for this block
+  ++eventIndex;
+  return &timeline[eventIndex - 1];
 }

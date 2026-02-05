@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -49,6 +50,15 @@ public:
   void setFadeInDuration(double seconds);
   void setFadeOutDuration(double seconds);
 
+  int64_t getFadeInDuration_samples();
+  int64_t getFadeOutDuration_samples();
+
+  float getFadeInGainRate();
+  float getFadeOutGainRate();
+  void setGain(float gain);
+
+  float getGain();
+
   // Global sample timeline
 
   int64_t getTotalSamples(double sampleRate);
@@ -75,7 +85,11 @@ private:
   float gain = 1.0f; // default full volume
 
   // Basic crossfading
-
+  int64_t fadeInDuration_samples = 0;
+  int64_t fadeOutDuration_samples = 0;
+  float fadeInGainRate;
+  float fadeOutGainRate;
+  
 
   // Global sample scheduling
   double currentSampleRate = 44100.0;

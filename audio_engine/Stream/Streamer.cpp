@@ -1,4 +1,5 @@
 #include "Streamer.h"
+#include "AudioTrack.h"
 #include "TimelineEvent.h"
 #include <cstdint>
 
@@ -48,6 +49,9 @@ void Streamer::getNextAudioBlock(
   int64_t blockEnd = globalSamplePosition + bufferToFill.numSamples;
 
   TimelineEvent *event = nullptr;
+
+  // Hande fades here
+
   do {
 
     event = eventTimeline.getEvent(blockEnd);
@@ -55,35 +59,39 @@ void Streamer::getNextAudioBlock(
     if (event) {
 
       auto *t = event->track->getTransport();
+      AudioTrack *track = event->track;
       switch (event->type) {
-      case TimelineEvent::START:
+
+      case TimelineEvent::START: {
         t->setPosition(0.0);
         mixer.addInputSource(t, false);
         t->start();
         break;
+      }
 
-      case TimelineEvent::FADE_IN:
-
-        break;
-
-      case TimelineEvent::FADE_OUT:
+      case TimelineEvent::FADE_IN: {
 
         break;
+      }
 
-      case TimelineEvent::STOP:
-        // Stoping and removing audio in the audio thread causes glitches
-
-        // t->stop();
-        // mixer.removeInputSource(t);
-        break;
-
-      case TimelineEvent::REMOVE_FROM_MIXER:
+      case TimelineEvent::FADE_OUT: {
 
         break;
+      }
 
-      case TimelineEvent::END_TRACKLIST:
-
+      case TimelineEvent::STOP: {
+        // defer actual stop to avoid glitches
         break;
+      }
+
+      case TimelineEvent::REMOVE_FROM_MIXER: {
+        mixer.removeInputSource(t);
+        break;
+      }
+
+      case TimelineEvent::END_TRACKLIST: {
+        break;
+      }
 
       default:
         break;
