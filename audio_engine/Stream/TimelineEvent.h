@@ -21,4 +21,5 @@ struct FadeState {
   AudioTrack *track;
   int64_t fadeSamplesRemaining = 0;
   float fadeRate;
+  bool removeFadeState = false;
 };

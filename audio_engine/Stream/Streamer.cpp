@@ -59,22 +59,28 @@ void Streamer::getNextAudioBlock(
   */
 
   // First, process active fades
-  for (int i = 0; i < eventTimeline.fadeTimeline.size(); ++i) {
-    AudioTrack *track = eventTimeline.fadeTimeline[i].track;
+  if (!eventTimeline.fadeTimeline.empty()) {
+    for (int i = 0; i < eventTimeline.fadeTimeline.size(); ++i) {
+      if(!eventTimeline.fadeTimeline[i].fadeStatus){
+        break;
+      }
 
-    float currentGain = track->getGain();
-    float editedGain =
-        currentGain - eventTimeline.fadeTimeline[i].track->getFadeOutGainRate();
-    editedGain = juce::jlimit(0.0f, 1.0f, editedGain);
-    track->setGain(editedGain);
+      float currentGain =
+          eventTimeline.fadeTimeline[i].track->getTransport()->getGain();
+      float fadeChange =
+          eventTimeline.fadeTimeline[i].fadeRate * bufferToFill.numSamples;
+      float editedGain = currentGain + fadeChange;
 
-    // --- Debug print ---
-    std::cout << "[FADE] Track: " << track->getSource() << " | Fade type: "
-              << (eventTimeline.fadeTimeline[i].fadeType == FadeState::FADE_IN
-                      ? "IN"
-                      : "OUT")
-              << " | Gain: " << editedGain << " | Samples left: "
-              << eventTimeline.fadeTimeline[i].fadeSamplesRemaining << "\n";
+      eventTimeline.fadeTimeline[i].track->getTransport()->setGain(editedGain);
+
+      eventTimeline.fadeTimeline[i].fadeSamplesRemaining -=
+          bufferToFill.numSamples;
+
+      if(eventTimeline.fadeTimeline[i].fadeSamplesRemaining <= 0){
+        eventTimeline.fadeTimeline[i].fadeStatus = false;
+        eventTimeline.fadeTimeline[i].removeFadeState = true;
+      }
+    }
   }
 
   // Now handle timeline events

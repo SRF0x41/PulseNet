@@ -10,14 +10,14 @@ int main() {
   // Create tracks
   // --------------------
   AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/echohotel.mp3");
-  trackA.setFadeInDuration(10);
-  trackA.setFadeOutDuration(10);
+  trackA.setFadeInDuration(5);
+  //trackA.setFadeOutDuration(10);
 
-  AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/gong.mp3");
-  trackB.setStartOverlapSeconds(10);
-  AudioTrack trackD("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");
-  trackD.setStartOverlapSeconds(10);
-  AudioTrack trackE("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/SNOW STRIPPERS - UNDER YOUR SPELL.mp3");
+  // AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/gong.mp3");
+  // trackB.setStartOverlapSeconds(10);
+  // AudioTrack trackD("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");
+  // trackD.setStartOverlapSeconds(10);
+  // AudioTrack trackE("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/SNOW STRIPPERS - UNDER YOUR SPELL.mp3");
 
 
   // --------------------
@@ -26,9 +26,9 @@ int main() {
   // mixer::Streamer streamer(trackA);
    mixer::Streamer streamer;
   streamer.addNext(trackA);
-  streamer.addNext(trackB);
-  streamer.addNext(trackD);
-  streamer.addNext(trackE);
+  // streamer.addNext(trackB);
+  // streamer.addNext(trackD);
+  // streamer.addNext(trackE);
   streamer.start();
 
   // --------------------
