@@ -70,9 +70,9 @@ void AudioTrack::setFadeOutDuration(double seconds) {
 
   if (fadeOutDuration_samples > 0)
     fadeOutGainRate =
-        1.0f / static_cast<float>(fadeOutDuration_samples); // float division
+        -1.0f / static_cast<float>(fadeOutDuration_samples); // float division
   else
-    fadeOutGainRate = 1.0f;
+    fadeOutGainRate = -1.0f;
 }
 
 float AudioTrack::getFadeInGainRate() { return fadeInGainRate; }

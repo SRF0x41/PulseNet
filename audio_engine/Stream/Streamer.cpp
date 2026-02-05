@@ -59,27 +59,24 @@ void Streamer::getNextAudioBlock(
   */
 
   // First, process active fades
-  if (!eventTimeline.fadeTimeline.empty()) {
-    for (int i = 0; i < eventTimeline.fadeTimeline.size(); ++i) {
-      if(!eventTimeline.fadeTimeline[i].fadeStatus){
-        break;
-      }
+  for (auto &fade : eventTimeline.fadeTimeline) {
+    if (!fade.fadeStatus)
+      continue;
 
-      float currentGain =
-          eventTimeline.fadeTimeline[i].track->getTransport()->getGain();
-      float fadeChange =
-          eventTimeline.fadeTimeline[i].fadeRate * bufferToFill.numSamples;
-      float editedGain = currentGain + fadeChange;
+    auto *transport = fade.track->getTransport();
 
-      eventTimeline.fadeTimeline[i].track->getTransport()->setGain(editedGain);
+    float currentGain = transport->getGain();
+    float fadeChange = fade.fadeRate * bufferToFill.numSamples;
+    float editedGain = juce::jlimit(0.0f, 1.0f, currentGain + fadeChange);
 
-      eventTimeline.fadeTimeline[i].fadeSamplesRemaining -=
-          bufferToFill.numSamples;
+    transport->setGain(editedGain);
 
-      if(eventTimeline.fadeTimeline[i].fadeSamplesRemaining <= 0){
-        eventTimeline.fadeTimeline[i].fadeStatus = false;
-        eventTimeline.fadeTimeline[i].removeFadeState = true;
-      }
+    fade.fadeSamplesRemaining -= bufferToFill.numSamples;
+
+    if (fade.fadeSamplesRemaining <= 0) {
+      transport->setGain(fade.fadeType == FadeState::FADE_IN ? 1.0f : 0.0f);
+      fade.fadeStatus = false;
+      fade.removeFadeState = true;
     }
   }
 
@@ -109,7 +106,7 @@ void Streamer::getNextAudioBlock(
 
       case TimelineEvent::FADE_OUT:
         std::cout << "FADE_OUT\n";
-        // optionally arm fade here if not already active
+        eventTimeline.startFade(event);
         break;
 
       case TimelineEvent::STOP:
