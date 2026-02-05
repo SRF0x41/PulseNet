@@ -1,5 +1,8 @@
 #pragma once
 #include "AudioTrack.h"
+#include "TimelineEvent.h"
+#include <cstddef>
+#include <cstdint>
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_audio_formats/juce_audio_formats.h>
@@ -12,18 +15,12 @@ public:
 
   bool addTrack(AudioTrack &track);
 
-  juce::AudioTransportSource* getEvent();
-
+  TimelineEvent* getEvent( int64_t endBlock);
 
 private:
   double currentSampleRate;
-  struct TimelineEvent {
-    int64_t startSample; // When this event triggers
-    AudioTrack *track;   // Which track
-    // enum EventType { START, FADE_IN, FADE_OUT } type;
-    double durationSamples; // Optional: for fades
-  };
-  int64_t sumTrackSamples = -1;
-  std::vector<TimelineEvent> timelineEvents;
 
+  int64_t sumTrackSamples = -1;
+  std::vector<TimelineEvent> timeline;
+  size_t eventIndex = 0;
 };

@@ -1,40 +1,87 @@
 #include "EventTimeline.h"
 #include "AudioTrack.h"
+#include "TimelineEvent.h"
+#include <cstddef>
 
 EventTimeline::EventTimeline(double sampleRate) {
-    currentSampleRate = sampleRate;
+  currentSampleRate = sampleRate;
 }
 
 EventTimeline::~EventTimeline() {}
+/*#pragma once
+#include "AudioTrack.h"
+#include <cstdint>
+struct TimelineEvent {
 
+    int64_t eventSample; // When this event triggers
+    AudioTrack *track;   // Which track
+    enum EventType { START, STOP, FADE_IN, FADE_OUT } type;
+
+  };*/
 bool EventTimeline::addTrack(AudioTrack &track) {
-  if (!track.getTransport())
-    return false;
-  TimelineEvent new_track;
-  new_track.track = &track;
-  new_track.durationSamples = track.getTotalSamples(currentSampleRate);
-  if (sumTrackSamples <= 0) {
-    new_track.startSample = 0;
-  } else {
-    new_track.startSample =
-        sumTrackSamples - track.getOverlapSamples(currentSampleRate);
-  }
+    if (!track.getTransport())
+        return false;
 
-  timelineEvents.push_back(new_track);
+    // --- Start event ---
+    TimelineEvent START_track;
+    START_track.type = TimelineEvent::START;
+    START_track.track = &track;
+    if (sumTrackSamples <= 0) {
+        START_track.eventSample = 0;
+    } else {
+        START_track.eventSample =
+            sumTrackSamples - track.getOverlapSamples(currentSampleRate);
+    }
+    timeline.push_back(START_track);
 
-  sumTrackSamples += track.getTotalSamples(currentSampleRate) -
-                     track.getOverlapSamples(currentSampleRate);
+    // Update sum of track samples
+    sumTrackSamples += track.getTotalSamples(currentSampleRate) -
+                       track.getOverlapSamples(currentSampleRate);
 
-  std::sort(timelineEvents.begin(), timelineEvents.end(),
-            [](auto &a, auto &b) { return a.startSample < b.startSample; });
+    // --- End event ---
+    TimelineEvent STOP_track;
+    STOP_track.type = TimelineEvent::STOP;
+    STOP_track.track = &track;
+    STOP_track.eventSample = sumTrackSamples;
+    timeline.push_back(STOP_track);
 
-  std::cout << "Queued: " << track.getSource() << " at "
-            << new_track.startSample << '\n';
+    // Sort timeline by eventSample
+    std::sort(timeline.begin(), timeline.end(),
+              [](const TimelineEvent &a, const TimelineEvent &b) {
+                  return a.eventSample < b.eventSample;
+              });
 
-  return true;
+    // --- Print all events ---
+    std::cout << "Timeline after adding track: " << track.getSource() << "\n";
+    for (const auto &ev : timeline) {
+        std::string typeStr;
+        switch (ev.type) {
+            case TimelineEvent::START:     typeStr = "START"; break;
+            case TimelineEvent::STOP:      typeStr = "STOP"; break;
+            case TimelineEvent::FADE_IN:   typeStr = "FADE_IN"; break;
+            case TimelineEvent::FADE_OUT:  typeStr = "FADE_OUT"; break;
+            default:                       typeStr = "UNKNOWN"; break;
+        }
+
+        std::cout << "Event: " << typeStr
+                  << " | Track: " << (ev.track ? ev.track->getSource() : "null")
+                  << " | Sample: " << ev.eventSample << "\n";
+    }
+
+    return true;
 }
 
 
-juce::AudioTransportSource* EventTimeline::getEvent(){
+TimelineEvent* EventTimeline::getEvent(int64_t endBlock) {
+    if (eventIndex >= timeline.size()) {
+        return nullptr; // no more events
+    }
 
+    if (timeline[eventIndex].eventSample >= endBlock) {
+        return nullptr; // event is beyond this block
+    }
+
+    // Event is valid for this block
+    ++eventIndex;
+    return &timeline[eventIndex - 1];
 }

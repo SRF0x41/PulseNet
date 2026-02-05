@@ -5,7 +5,7 @@
 #include <string>
 class Event{
     public:
-    Event();
+    Event(const std::string eventType);
     ~Event();
     private:
 

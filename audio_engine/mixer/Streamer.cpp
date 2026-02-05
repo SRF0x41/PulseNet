@@ -1,4 +1,5 @@
 #include "Streamer.h"
+#include "TimelineEvent.h"
 #include <cstdint>
 
 namespace mixer {
@@ -11,8 +12,6 @@ Streamer::Streamer() : eventTimeline(currentSampleRate) {
 
   audioSourcePlayer.setSource(this);
   deviceManager.addAudioCallback(&audioSourcePlayer);
-
-  
 }
 
 Streamer::~Streamer() {
@@ -41,10 +40,42 @@ double Streamer::getGlobalPositionSeconds() {
   return static_cast<double>(globalSamplePosition) / currentSampleRate;
 }
 
-
 void Streamer::getNextAudioBlock(
     const juce::AudioSourceChannelInfo &bufferToFill) {
   bufferToFill.clearActiveBufferRegion();
+
+  int64_t blockStart = globalSamplePosition;
+  int64_t blockEnd = globalSamplePosition + bufferToFill.numSamples;
+
+  TimelineEvent *event = nullptr;
+  do {
+
+    event = eventTimeline.getEvent(blockEnd);
+
+    if (event) {
+
+      auto *t = event->track->getTransport();
+      switch (event->type) {
+      case TimelineEvent::START:
+        t->setPosition(0.0);
+        mixer.addInputSource(t, false);
+        t->start();
+        break;
+
+      case TimelineEvent::STOP:
+        // Stoping and removing audio in the audio thread causes glitches
+    
+        //t->stop();
+        //mixer.removeInputSource(t);
+        break;
+
+      default:
+        break;
+      }
+      
+    }
+  } while (event);
+  mixer.getNextAudioBlock(bufferToFill);
 
   globalSamplePosition += bufferToFill.numSamples;
 
