@@ -62,17 +62,32 @@ void Streamer::getNextAudioBlock(
         t->start();
         break;
 
+      case TimelineEvent::FADE_IN:
+
+        break;
+
+      case TimelineEvent::FADE_OUT:
+
+        break;
+
       case TimelineEvent::STOP:
         // Stoping and removing audio in the audio thread causes glitches
-    
-        //t->stop();
-        //mixer.removeInputSource(t);
+
+        // t->stop();
+        // mixer.removeInputSource(t);
+        break;
+
+      case TimelineEvent::REMOVE_FROM_MIXER:
+
+        break;
+
+      case TimelineEvent::END_TRACKLIST:
+
         break;
 
       default:
         break;
       }
-      
     }
   } while (event);
   mixer.getNextAudioBlock(bufferToFill);
