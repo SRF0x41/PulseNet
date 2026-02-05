@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "AudioTrack.h"
+#include "EventTimeline.h"
 
 namespace mixer {
 
@@ -34,7 +35,7 @@ public:
 
     // Global timeline
     double getGlobalPositionSeconds();
-    double getSumSamplesSeconds();
+
 
 private:
     juce::AudioDeviceManager deviceManager;
@@ -51,17 +52,9 @@ private:
 
     // Global sample timeline scheduling
     int64_t globalSamplePosition = 0;
-    int64_t sumTrackSamples = -1;
 
-    struct TimelineEvent {
-        int64_t startSample;        // When this event triggers
-        AudioTrack* track;          // Which track
-        //enum EventType { START, FADE_IN, FADE_OUT } type;
-        double durationSamples;     // Optional: for fades
-    };
 
-    size_t currentEventIndex = 0;
-    std::vector<TimelineEvent> globalTimelineEvents;
+    EventTimeline eventTimeline;
 
 };
 

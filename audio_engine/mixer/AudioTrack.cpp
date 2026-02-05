@@ -26,7 +26,6 @@ AudioTrack::AudioTrack(const std::string& sourcePath)
         reader->sampleRate
     );
 
-   //transport.setGain(0.1f);
 }
 
 
