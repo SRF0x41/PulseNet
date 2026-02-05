@@ -104,14 +104,16 @@ void EventTimeline::startFade(TimelineEvent *event) {
   FadeState push_fade;
   push_fade.fadeStatus = true;
   push_fade.track = event->track;
-  push_fade.fadeSamplesRemaining = event->track->getFadeInDuration_samples();
+  
   
   if (event->type == TimelineEvent::FADE_IN) {
     push_fade.fadeType = FadeState::FADE_IN;
+    push_fade.fadeSamplesRemaining = event->track->getFadeInDuration_samples();
     push_fade.fadeRate = event->track->getFadeInGainRate();
   }
   if (event->type == TimelineEvent::FADE_OUT) {
     push_fade.fadeType = FadeState::FADE_OUT;
+    push_fade.fadeSamplesRemaining = event->track->getFadeOutDuration_samples();
     push_fade.fadeRate = event->track->getFadeOutGainRate();
   }
   fadeTimeline.push_back(push_fade);

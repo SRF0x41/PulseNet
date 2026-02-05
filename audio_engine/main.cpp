@@ -9,20 +9,24 @@ int main() {
   // --------------------
   // Create tracks
   // --------------------
-  // AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/echohotel.mp3");
+  // AudioTrack
+  // trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/echohotel.mp3");
   // trackA.setFadeInDuration(7);
   // trackA.setFadeOutDuration(7);
 
-  // AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/gong.mp3");
+  // AudioTrack
+  // trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/gong.mp3");
   // trackB.setStartOverlapSeconds(7);
   // trackB.setFadeInDuration(7);
   // trackB.setFadeOutDuration(7);
 
-  // AudioTrack trackD("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");
+  // AudioTrack
+  // trackD("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");
   // trackD.setStartOverlapSeconds(7);
   // trackD.setFadeInDuration(7);
-  // // AudioTrack trackE("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/SNOW STRIPPERS - UNDER YOUR SPELL.mp3");
-
+  // // AudioTrack
+  // trackE("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/SNOW STRIPPERS -
+  // UNDER YOUR SPELL.mp3");
 
   // // --------------------
   // // Create streamer
@@ -35,10 +39,12 @@ int main() {
   // // streamer.addNext(trackE);
 
   mixer::Streamer streamer;
-  AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Holdin On.mp3");
+  AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Disclosure - Latch ft. Sam Smith.mp3");
+  trackA.setFadeInDuration(7);
   trackA.setFadeOutDuration(10);
 
-  AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/This Summer (JBAG Remix).mp3");
+  AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/This "
+                    "Summer (JBAG Remix).mp3");
   trackB.setStartOverlapSeconds(10);
   trackB.setFadeInDuration(10);
 
