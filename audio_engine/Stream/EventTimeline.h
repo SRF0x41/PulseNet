@@ -17,7 +17,7 @@ public:
 
   TimelineEvent* getEvent( int64_t endBlock);
 
-  void startFade();
+  void startFade(TimelineEvent event);
 
 private:
   double currentSampleRate;

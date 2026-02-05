@@ -52,6 +52,10 @@ void Streamer::getNextAudioBlock(
 
   // Hande fades here
 
+  
+
+
+
   do {
 
     event = eventTimeline.getEvent(blockEnd);
@@ -70,7 +74,7 @@ void Streamer::getNextAudioBlock(
       }
 
       case TimelineEvent::FADE_IN: {
-
+        eventTimeline.startFade(t);
         break;
       }
 

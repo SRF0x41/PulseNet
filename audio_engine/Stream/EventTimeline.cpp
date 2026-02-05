@@ -55,13 +55,13 @@ bool EventTimeline::addTrack(AudioTrack &track) {
   }
 
   // --- Fade out event ---
-  if(track.getFadeOutDuration_samples() > 0){
+  if (track.getFadeOutDuration_samples() > 0) {
     TimelineEvent FADE_OUT_event;
     FADE_OUT_event.type = TimelineEvent::FADE_OUT;
-    FADE_OUT_event.eventSample = STOP_track.eventSample - track.getFadeOutDuration_samples();
+    FADE_OUT_event.eventSample =
+        STOP_track.eventSample - track.getFadeOutDuration_samples();
     FADE_OUT_event.track = &track;
     timeline.push_back(FADE_OUT_event);
-
   }
 
   // Sort timeline by eventSample
@@ -98,6 +98,17 @@ bool EventTimeline::addTrack(AudioTrack &track) {
   }
 
   return true;
+}
+
+void EventTimeline::startFade(TimelineEvent event) {
+  if (event.type == TimelineEvent::FADE_IN) {
+    FadeState push_fade;
+    push_fade.fadeType = FadeState::FADE_IN;
+    push_fade.track = event.track;
+    push_fade.fadeSamplesRemaining = event.track->getFadeInDuration_samples();
+    push_fade.fadeRate = event.track->getFadeInGainRate();
+    fadeTimeline.push_back(push_fade);
+  }
 }
 
 TimelineEvent *EventTimeline::getEvent(int64_t endBlock) {
