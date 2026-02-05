@@ -19,7 +19,6 @@ struct FadeState {
   bool fadeStatus;
   enum FadeType { FADE_IN, FADE_OUT } fadeType;
   AudioTrack *track;
-
   int64_t fadeSamplesRemaining = 0;
   float fadeRate;
 };

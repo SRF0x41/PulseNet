@@ -48,60 +48,88 @@ void Streamer::getNextAudioBlock(
   int64_t blockStart = globalSamplePosition;
   int64_t blockEnd = globalSamplePosition + bufferToFill.numSamples;
 
-  TimelineEvent *event = nullptr;
-
   // Hande fades here
+  /*struct FadeState {
+  bool fadeStatus;
+  enum FadeType { FADE_IN, FADE_OUT } fadeType;
+  AudioTrack *track;
+  int64_t fadeSamplesRemaining = 0;
+  float fadeRate;
+  };
+  */
 
-  
+  // First, process active fades
+  for (int i = 0; i < eventTimeline.fadeTimeline.size(); ++i) {
+    AudioTrack *track = eventTimeline.fadeTimeline[i].track;
 
+    float currentGain = track->getGain();
+    float editedGain =
+        currentGain - eventTimeline.fadeTimeline[i].track->getFadeOutGainRate();
+    editedGain = juce::jlimit(0.0f, 1.0f, editedGain);
+    track->setGain(editedGain);
 
+    // --- Debug print ---
+    std::cout << "[FADE] Track: " << track->getSource() << " | Fade type: "
+              << (eventTimeline.fadeTimeline[i].fadeType == FadeState::FADE_IN
+                      ? "IN"
+                      : "OUT")
+              << " | Gain: " << editedGain << " | Samples left: "
+              << eventTimeline.fadeTimeline[i].fadeSamplesRemaining << "\n";
+  }
 
+  // Now handle timeline events
+  TimelineEvent *event = nullptr;
   do {
-
     event = eventTimeline.getEvent(blockEnd);
 
     if (event) {
-
       auto *t = event->track->getTransport();
       AudioTrack *track = event->track;
-      switch (event->type) {
 
-      case TimelineEvent::START: {
+      std::cout << "[EVENT] Track: " << track->getSource() << " | Event type: ";
+
+      switch (event->type) {
+      case TimelineEvent::START:
+        std::cout << "START\n";
         t->setPosition(0.0);
         mixer.addInputSource(t, false);
         t->start();
         break;
-      }
 
-      case TimelineEvent::FADE_IN: {
-        eventTimeline.startFade(t);
+      case TimelineEvent::FADE_IN:
+        std::cout << "FADE_IN\n";
+        eventTimeline.startFade(event);
         break;
-      }
 
-      case TimelineEvent::FADE_OUT: {
-
+      case TimelineEvent::FADE_OUT:
+        std::cout << "FADE_OUT\n";
+        // optionally arm fade here if not already active
         break;
-      }
 
-      case TimelineEvent::STOP: {
-        // defer actual stop to avoid glitches
+      case TimelineEvent::STOP:
+        std::cout << "STOP\n";
+        // defer stop to avoid audio glitches
         break;
-      }
 
-      case TimelineEvent::REMOVE_FROM_MIXER: {
+      case TimelineEvent::REMOVE_FROM_MIXER:
+        std::cout << "REMOVE_FROM_MIXER\n";
         mixer.removeInputSource(t);
         break;
-      }
 
-      case TimelineEvent::END_TRACKLIST: {
+      case TimelineEvent::END_TRACKLIST:
+        std::cout << "END_TRACKLIST\n";
         break;
-      }
 
       default:
+        std::cout << "UNKNOWN\n";
         break;
       }
+
+      std::cout << "Event sample: " << event->eventSample
+                << " | Block end: " << blockEnd << "\n";
     }
   } while (event);
+
   mixer.getNextAudioBlock(bufferToFill);
 
   globalSamplePosition += bufferToFill.numSamples;

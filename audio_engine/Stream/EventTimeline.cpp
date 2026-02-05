@@ -100,13 +100,14 @@ bool EventTimeline::addTrack(AudioTrack &track) {
   return true;
 }
 
-void EventTimeline::startFade(TimelineEvent event) {
-  if (event.type == TimelineEvent::FADE_IN) {
+void EventTimeline::startFade(TimelineEvent *event) {
+  if (event->type == TimelineEvent::FADE_IN) {
     FadeState push_fade;
     push_fade.fadeType = FadeState::FADE_IN;
-    push_fade.track = event.track;
-    push_fade.fadeSamplesRemaining = event.track->getFadeInDuration_samples();
-    push_fade.fadeRate = event.track->getFadeInGainRate();
+    push_fade.fadeStatus = true;
+    push_fade.track = event->track;
+    push_fade.fadeSamplesRemaining = event->track->getFadeInDuration_samples();
+    push_fade.fadeRate = event->track->getFadeInGainRate();
     fadeTimeline.push_back(push_fade);
   }
 }
