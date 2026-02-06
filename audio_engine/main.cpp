@@ -1,5 +1,5 @@
-#include "Stream/AudioTrack.h"
-#include "Stream/Streamer.h"
+#include "stream/AudioTrack.h"
+#include "stream/Streamer.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_core/juce_core.h>
