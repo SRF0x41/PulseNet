@@ -1,62 +1,110 @@
+#include "comms/SocketManager.h"
 #include "stream/AudioTrack.h"
 #include "stream/Streamer.h"
-#include "comms/SocketManager.h"
+#include <iostream>
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_core/juce_core.h>
+#include <nlohmann/json.hpp>
+#include <string>
 #include <thread>
 
+// for convenience
+using json = nlohmann::json;
 
-int main()
-{
-    SocketManager socket;
+int main() {
+  SocketManager socket;
 
-    if (!socket.connect("127.0.0.1", 8080))
-    {
-        std::cerr << "Failed to connect\n";
-        return 1;
+  if (!socket.connect("127.0.0.1", 8080)) {
+    std::cerr << "Failed to connect\n";
+    return 1;
+  }
+
+  std::cout << "Connected to server\n";
+
+  while (true) {
+    // const char* msg = "hello from C++\n";
+    // socket.sendBytes(msg, std::strlen(msg));
+
+    char buffer[4096] = {};
+    int bytes = socket.receiveBytes(buffer, sizeof(buffer) - 1);
+
+    if (bytes <= 0) {
+      std::cout << "Server disconnected\n";
+      break;
+    }
+    buffer[bytes] = '\0';
+    std::cout << "Server says: " << buffer << '\n';
+
+    std::string command;
+    std::string track_path;
+
+    try {
+      // Parse JSON
+      json msg = json::parse(buffer);
+
+      if (msg.contains("command")) {
+        std::cout << "[SERVER COMMAND]: " << msg["command"].get<std::string>()
+                  << '\n';
+        command = msg["command"].get<std::string>();
+      }
+
+      if (msg.contains("track_path")) {
+        std::cout << "[COMMAND TRACK PATH]: "
+                  << msg["track_path"].get<std::string>() << '\n';
+        track_path = msg["track_path"].get<std::string>();
+      }
+
+      if (msg.contains("properties")) {
+    json props = msg["properties"];
+
+    if (props.contains("advance_start"))
+        std::cout << "[advance_start]: " << props["advance_start"].get<double>() << "\n";
+
+    if (props.contains("set_fade_in_duration"))
+        std::cout << "[set_fade_in_duration]: " << props["set_fade_in_duration"].get<double>() << "\n";
+
+    if (props.contains("set_virtual_end_trim"))
+        std::cout << "[set_virtual_end_trim]: " << props["set_virtual_end_trim"].get<double>() << "\n";
+
+    if (props.contains("set_fade_out_duration"))
+        std::cout << "[set_fade_out_duration]: " << props["set_fade_out_duration"].get<double>() << "\n";
+
+    if (props.contains("set_overlap_duration"))
+        std::cout << "[set_overlap_duration]: " << props["set_overlap_duration"].get<double>() << "\n";
+}
+
+    } catch (json::parse_error &e) {
+      std::cerr << "JSON parse error: " << e.what() << "\n";
+      std::cerr << "Buffer content: " << buffer << "\n";
     }
 
-    std::cout << "Connected to server\n";
+    // send ack message
+    json ackMessage;
+    ackMessage["type"] = "message";
+    ackMessage["data"] = "ACK";
 
-    while (true)
-    {
-        //const char* msg = "hello from C++\n";
-        //socket.sendBytes(msg, std::strlen(msg));
+    std::string ackJson_str = ackMessage.dump();
+    std::cout << "Serialized JSON: " << ackJson_str << '\n';
+    socket.sendBytes(ackJson_str.c_str(), ackJson_str.size());
 
-        char buffer[4096] = {};
-        int bytes = socket.receiveBytes(buffer, sizeof(buffer) - 1);
+    // std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
 
-        if (bytes <= 0)
-        {
-            std::cout << "Server disconnected\n";
-            break;
-        }
-
-        buffer[bytes] = '\0';
-        std::cout << "Server says: " << buffer;
-
-
-
-
-
-        //std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
-    return 0;
+  return 0;
 
   /*TODO: make sure streamer removes tracks and fades in the timer callback! not
    * in the audio buffer callback*/
 
   // mixer::Streamer streamer;
-  // AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Holdin On.mp3");
-  // trackA.advanceStart(20);
-  // trackA.setFadeInDuration(7);
+  // AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume
+  // - Holdin On.mp3"); trackA.advanceStart(20); trackA.setFadeInDuration(7);
   // trackA.setFadeOutDuration(5);
   // trackA.virtualEndTrim(27);
 
-  // AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");
-  // trackB.setStartOverlapSeconds(29.571);                                                         
+  // AudioTrack
+  // trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");
+  // trackB.setStartOverlapSeconds(29.571);
   // trackB.setFadeInDuration(5);
 
   // streamer.addNext(trackA);
