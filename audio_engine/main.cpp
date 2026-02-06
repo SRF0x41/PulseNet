@@ -11,14 +11,15 @@ int main() {
    * in the audio buffer callback*/
 
   mixer::Streamer streamer;
-  AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/SNOW STRIPPERS - UNDER YOUR SPELL.mp3");
+  AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Holdin On.mp3");
+  trackA.advanceStart(20);
   trackA.setFadeInDuration(7);
-  trackA.setFadeOutDuration(7);
-  trackA.virtualEndTrim(20);
+  trackA.setFadeOutDuration(5);
+  trackA.virtualEndTrim(27);
 
   AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");
-  trackB.setStartOverlapSeconds(27.458);
-  trackB.setFadeInDuration(7);
+  trackB.setStartOverlapSeconds(29.571);
+  trackB.setFadeInDuration(5);
 
   streamer.addNext(trackA);
   streamer.addNext(trackB);

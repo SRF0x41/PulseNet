@@ -77,6 +77,9 @@ public:
   double getVirtualRemainingTime();
   int64_t getVirtualRemainingSamples(double sampleRate);
 
+
+  void advanceStart(double seconds);
+
 private:
   // --------------------
   // Properties
@@ -85,6 +88,7 @@ private:
   float bpm{0.0f};
   float remainingTime{0.0f};
   float remainingVirtualTime{0.0f};
+  float startTime{0.0f};
 
   juce::AudioFormatManager formatManager;
   std::unique_ptr<juce::AudioFormatReaderSource> readerSource;

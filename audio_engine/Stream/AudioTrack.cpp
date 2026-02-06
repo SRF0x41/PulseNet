@@ -18,9 +18,10 @@ AudioTrack::AudioTrack(const std::string &sourcePath) : source(sourcePath) {
   readerSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
 
   transport.setSource(readerSource.get(), 0, nullptr, reader->sampleRate);
+  // t->setPosition(0.0);
+  transport.setPosition(0.0);
 
   remainingTime = transport.getLengthInSeconds();
-  
 }
 
 // =====================
@@ -113,20 +114,26 @@ void AudioTrack::trimEnd(double seconds) {
   remainingTime -= seconds;
 }
 
-
-
-void AudioTrack::virtualEndTrim(double seconds){
+void AudioTrack::virtualEndTrim(double seconds) {
   if (seconds > transport.getLengthInSeconds()) {
     return;
   }
   remainingVirtualTime = remainingTime - seconds;
 }
 
-double AudioTrack::getVirtualRemainingTime(){
-  return remainingVirtualTime;
+double AudioTrack::getVirtualRemainingTime() { return remainingVirtualTime; }
+
+int64_t AudioTrack::getVirtualRemainingSamples(double sampleRate) {
+  return static_cast<int64_t>(remainingVirtualTime * sampleRate);
 }
 
+void AudioTrack::advanceStart(double seconds) {
+  if(seconds > remainingTime){
+    return;
+  }
 
-int64_t AudioTrack::getVirtualRemainingSamples(double sampleRate){
-  return static_cast<int64_t>(remainingVirtualTime * sampleRate);
+  startTime += seconds;
+  transport.setPosition(startTime);
+  remainingTime -= seconds;
+
 }

@@ -94,7 +94,7 @@ void Streamer::getNextAudioBlock(
       switch (event->type) {
       case TimelineEvent::START:
         std::cout << "START\n";
-        t->setPosition(0.0);
+        
         mixer.addInputSource(t, false);
         t->start();
         break;
