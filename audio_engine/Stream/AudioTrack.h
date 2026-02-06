@@ -42,11 +42,15 @@ public:
   void startTransport();
   void stopTransport();
 
-  // overlap control
+  // --------------------
+  // Overlap control
+  // --------------------
   void setStartOverlapSeconds(double seconds);
   double getStartOverlapSeconds() const;
 
-  // basic crossfading
+  // --------------------
+  // Basic crossfading
+  // --------------------
   void setFadeInDuration(double seconds);
   void setFadeOutDuration(double seconds);
 
@@ -55,16 +59,23 @@ public:
 
   float getFadeInGainRate();
   float getFadeOutGainRate();
-  void setGain(float gain);
 
+  void setGain(float gain);
   float getGain();
 
+  // --------------------
   // Global sample timeline
-
+  // --------------------
   int64_t getTotalSamples(double sampleRate);
   int64_t getOverlapSamples(double sampleRate);
 
   // juce::AudioSource* getAudioSource(); // returns gain source
+
+
+  void trimEnd(double seconds);
+  void virtualEndTrim(double seconds);
+  double getVirtualRemainingTime();
+  int64_t getVirtualRemainingSamples(double sampleRate);
 
 private:
   // --------------------
@@ -73,6 +84,7 @@ private:
   const std::string source; // File path
   float bpm{0.0f};
   float remainingTime{0.0f};
+  float remainingVirtualTime{0.0f};
 
   juce::AudioFormatManager formatManager;
   std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
@@ -89,8 +101,9 @@ private:
   int64_t fadeOutDuration_samples = 0;
   float fadeInGainRate;
   float fadeOutGainRate;
-  
 
+  // --------------------
   // Global sample scheduling
+  // --------------------
   double currentSampleRate = 44100.0;
 };

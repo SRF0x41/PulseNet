@@ -137,28 +137,7 @@ void Streamer::getNextAudioBlock(
 
   globalSamplePosition += bufferToFill.numSamples;
 
-  //   int64_t blockStart = globalSamplePosition;
-  //   int64_t blockEnd = globalSamplePosition + bufferToFill.numSamples;
 
-  //   while (currentEventIndex < globalTimelineEvents.size()) {
-  //     auto &ev = globalTimelineEvents[currentEventIndex];
-
-  //     if (ev.startSample >= blockEnd)
-  //       break;
-
-  //     if (ev.startSample >= blockStart) {
-  //       std::cout << "Starting " << ev.track->getSource() << '\n';
-  //       auto *t = ev.track->getTransport();
-  //       t->setPosition(0.0);
-  //       mixer.addInputSource(t, false);
-  //       t->start();
-  //     }
-
-  //     ++currentEventIndex;
-  //   }
-
-  //   mixer.getNextAudioBlock(bufferToFill);
-  //   globalSamplePosition += bufferToFill.numSamples;
 }
 
 /*

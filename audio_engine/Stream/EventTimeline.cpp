@@ -35,6 +35,7 @@ bool EventTimeline::addTrack(AudioTrack &track) {
   timeline.push_back(START_track);
 
   // Update sum of track samples
+
   sumTrackSamples += track.getTotalSamples(currentSampleRate) -
                      track.getOverlapSamples(currentSampleRate);
 
@@ -42,7 +43,16 @@ bool EventTimeline::addTrack(AudioTrack &track) {
   TimelineEvent STOP_track;
   STOP_track.type = TimelineEvent::STOP;
   STOP_track.track = &track;
-  STOP_track.eventSample = sumTrackSamples;
+
+  int64_t remainingVirtualsamples =
+      track.getVirtualRemainingSamples(currentSampleRate);
+  if (remainingVirtualsamples > 0) {
+    STOP_track.eventSample = sumTrackSamples -
+                             track.getTotalSamples(currentSampleRate) +
+                             remainingVirtualsamples;
+  } else {
+    STOP_track.eventSample = sumTrackSamples;
+  }
   timeline.push_back(STOP_track);
 
   // --- Fade in event ---
@@ -104,8 +114,7 @@ void EventTimeline::startFade(TimelineEvent *event) {
   FadeState push_fade;
   push_fade.fadeStatus = true;
   push_fade.track = event->track;
-  
-  
+
   if (event->type == TimelineEvent::FADE_IN) {
     push_fade.fadeType = FadeState::FADE_IN;
     push_fade.fadeSamplesRemaining = event->track->getFadeInDuration_samples();

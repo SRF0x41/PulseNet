@@ -72,8 +72,9 @@ def beat_match_last_n_bars(song1_path, song2_path, bars=8, beats_per_bar=4):
 
 if __name__ == "__main__":
 
-    song1 = "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Disclosure - Latch ft. Sam Smith.mp3"
-    song2 = "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/This Summer (JBAG Remix).mp3"
+    
+    song1 = "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/SNOW STRIPPERS - UNDER YOUR SPELL.mp3"
+    song2 = "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3"
 
     # Align to last 8 bars
     seconds_before_end = beat_match_last_n_bars(song1, song2, bars=8, beats_per_bar=4)

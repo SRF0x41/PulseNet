@@ -6,47 +6,19 @@
 #include <thread>
 
 int main() {
-  // --------------------
-  // Create tracks
-  // --------------------
-  // AudioTrack
-  // trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/echohotel.mp3");
-  // trackA.setFadeInDuration(7);
-  // trackA.setFadeOutDuration(7);
 
-  // AudioTrack
-  // trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/gong.mp3");
-  // trackB.setStartOverlapSeconds(7);
-  // trackB.setFadeInDuration(7);
-  // trackB.setFadeOutDuration(7);
-
-  // AudioTrack
-  // trackD("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");
-  // trackD.setStartOverlapSeconds(7);
-  // trackD.setFadeInDuration(7);
-  // // AudioTrack
-  // trackE("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/SNOW STRIPPERS -
-  // UNDER YOUR SPELL.mp3");
-
-  // // --------------------
-  // // Create streamer
-  // // --------------------
-  // // mixer::Streamer streamer(trackA);
-  //  mixer::Streamer streamer;
-  // streamer.addNext(trackA);
-  // streamer.addNext(trackB);
-  // streamer.addNext(trackD);
-  // // streamer.addNext(trackE);
+  /*TODO: make sure streamer removes tracks and fades in the timer callback! not
+   * in the audio buffer callback*/
 
   mixer::Streamer streamer;
-  AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Disclosure - Latch ft. Sam Smith.mp3");
+  AudioTrack trackA("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/SNOW STRIPPERS - UNDER YOUR SPELL.mp3");
   trackA.setFadeInDuration(7);
-  trackA.setFadeOutDuration(10);
+  trackA.setFadeOutDuration(7);
+  trackA.virtualEndTrim(20);
 
-  AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/This "
-                    "Summer (JBAG Remix).mp3");
-  trackB.setStartOverlapSeconds(10);
-  trackB.setFadeInDuration(10);
+  AudioTrack trackB("/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/MDK.mp3");
+  trackB.setStartOverlapSeconds(27.458);
+  trackB.setFadeInDuration(7);
 
   streamer.addNext(trackA);
   streamer.addNext(trackB);
