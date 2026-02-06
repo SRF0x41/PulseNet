@@ -22,76 +22,78 @@ int main() {
 
   std::cout << "Connected to server\n";
 
-  while (true) {
-    // const char* msg = "hello from C++\n";
-    // socket.sendBytes(msg, std::strlen(msg));
-
-    char buffer[4096] = {};
-    int bytes = socket.receiveBytes(buffer, sizeof(buffer) - 1);
-
-    if (bytes <= 0) {
-      std::cout << "Server disconnected\n";
-      break;
-    }
-    buffer[bytes] = '\0';
-    std::cout << "Server says: " << buffer << '\n';
-
-    std::string command;
-    std::string track_path;
-
-    try {
-      // Parse JSON
-      json msg = json::parse(buffer);
-
-      if (msg.contains("command")) {
-        std::cout << "[SERVER COMMAND]: " << msg["command"].get<std::string>()
-                  << '\n';
-        command = msg["command"].get<std::string>();
-      }
-
-      if (msg.contains("track_path")) {
-        std::cout << "[COMMAND TRACK PATH]: "
-                  << msg["track_path"].get<std::string>() << '\n';
-        track_path = msg["track_path"].get<std::string>();
-      }
-
-      if (msg.contains("properties")) {
-    json props = msg["properties"];
-
-    if (props.contains("advance_start"))
-        std::cout << "[advance_start]: " << props["advance_start"].get<double>() << "\n";
-
-    if (props.contains("set_fade_in_duration"))
-        std::cout << "[set_fade_in_duration]: " << props["set_fade_in_duration"].get<double>() << "\n";
-
-    if (props.contains("set_virtual_end_trim"))
-        std::cout << "[set_virtual_end_trim]: " << props["set_virtual_end_trim"].get<double>() << "\n";
-
-    if (props.contains("set_fade_out_duration"))
-        std::cout << "[set_fade_out_duration]: " << props["set_fade_out_duration"].get<double>() << "\n";
-
-    if (props.contains("set_overlap_duration"))
-        std::cout << "[set_overlap_duration]: " << props["set_overlap_duration"].get<double>() << "\n";
-}
-
-    } catch (json::parse_error &e) {
-      std::cerr << "JSON parse error: " << e.what() << "\n";
-      std::cerr << "Buffer content: " << buffer << "\n";
-    }
-
-    // send ack message
-    json ackMessage;
-    ackMessage["type"] = "message";
-    ackMessage["data"] = "ACK";
-
-    std::string ackJson_str = ackMessage.dump();
-    std::cout << "Serialized JSON: " << ackJson_str << '\n';
-    socket.sendBytes(ackJson_str.c_str(), ackJson_str.size());
-
-    // std::this_thread::sleep_for(std::chrono::seconds(1));
-  }
-
   return 0;
+
+//   while (true) {
+//     // const char* msg = "hello from C++\n";
+//     // socket.sendBytes(msg, std::strlen(msg));
+
+//     char buffer[4096] = {};
+//     int bytes = socket.receiveBytes(buffer, sizeof(buffer) - 1);
+
+//     if (bytes <= 0) {
+//       std::cout << "Server disconnected\n";
+//       break;
+//     }
+//     buffer[bytes] = '\0';
+//     std::cout << "Server says: " << buffer << '\n';
+
+//     std::string command;
+//     std::string track_path;
+
+//     try {
+//       // Parse JSON
+//       json msg = json::parse(buffer);
+
+//       if (msg.contains("command")) {
+//         std::cout << "[SERVER COMMAND]: " << msg["command"].get<std::string>()
+//                   << '\n';
+//         command = msg["command"].get<std::string>();
+//       }
+
+//       if (msg.contains("track_path")) {
+//         std::cout << "[COMMAND TRACK PATH]: "
+//                   << msg["track_path"].get<std::string>() << '\n';
+//         track_path = msg["track_path"].get<std::string>();
+//       }
+
+//       if (msg.contains("properties")) {
+//     json props = msg["properties"];
+
+//     if (props.contains("advance_start"))
+//         std::cout << "[advance_start]: " << props["advance_start"].get<double>() << "\n";
+
+//     if (props.contains("set_fade_in_duration"))
+//         std::cout << "[set_fade_in_duration]: " << props["set_fade_in_duration"].get<double>() << "\n";
+
+//     if (props.contains("set_virtual_end_trim"))
+//         std::cout << "[set_virtual_end_trim]: " << props["set_virtual_end_trim"].get<double>() << "\n";
+
+//     if (props.contains("set_fade_out_duration"))
+//         std::cout << "[set_fade_out_duration]: " << props["set_fade_out_duration"].get<double>() << "\n";
+
+//     if (props.contains("set_overlap_duration"))
+//         std::cout << "[set_overlap_duration]: " << props["set_overlap_duration"].get<double>() << "\n";
+// }
+
+//     } catch (json::parse_error &e) {
+//       std::cerr << "JSON parse error: " << e.what() << "\n";
+//       std::cerr << "Buffer content: " << buffer << "\n";
+//     }
+
+//     // send ack message
+//     json ackMessage;
+//     ackMessage["type"] = "message";
+//     ackMessage["data"] = "ACK";
+
+//     std::string ackJson_str = ackMessage.dump();
+//     std::cout << "Serialized JSON: " << ackJson_str << '\n';
+//     socket.sendBytes(ackJson_str.c_str(), ackJson_str.size());
+
+//     // std::this_thread::sleep_for(std::chrono::seconds(1));
+//   }
+
+//   return 0;
 
   /*TODO: make sure streamer removes tracks and fades in the timer callback! not
    * in the audio buffer callback*/
