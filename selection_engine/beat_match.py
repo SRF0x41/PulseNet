@@ -11,6 +11,7 @@ Requires:
 import numpy as np
 import librosa
 from scipy.signal import correlate
+from socket_server import SocketServer
 
 # -------------------------
 # Helper Functions
@@ -71,6 +72,23 @@ def beat_match_last_n_bars(song1_path, song2_path, bars=8, beats_per_bar=4):
 # -------------------------
 
 if __name__ == "__main__":
+    
+
+
+    server = SocketServer(port=8080)
+    server.start()
+
+    while True:
+        data = server.receive(1024)
+        if not data:
+            print("[SocketServer] Client disconnected")
+            break
+
+        print("C++ says:", data.decode(errors="ignore"))
+        server.send(b"ack\n")
+
+    server.shutdown()
+
 
     
     song1 = "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/Flume - Holdin On.mp3"

@@ -6,12 +6,44 @@
 #include <juce_core/juce_core.h>
 #include <thread>
 
-int main() {
 
-  SocketManager socket;
+int main()
+{
+    SocketManager socket;
+
+    if (!socket.connect("127.0.0.1", 8080))
+    {
+        std::cerr << "Failed to connect\n";
+        return 1;
+    }
+
+    std::cout << "Connected to server\n";
+
+    while (true)
+    {
+        //const char* msg = "hello from C++\n";
+        //socket.sendBytes(msg, std::strlen(msg));
+
+        char buffer[4096] = {};
+        int bytes = socket.receiveBytes(buffer, sizeof(buffer) - 1);
+
+        if (bytes <= 0)
+        {
+            std::cout << "Server disconnected\n";
+            break;
+        }
+
+        buffer[bytes] = '\0';
+        std::cout << "Server says: " << buffer;
 
 
-  return 0;
+
+
+
+        //std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
+    return 0;
 
   /*TODO: make sure streamer removes tracks and fades in the timer callback! not
    * in the audio buffer callback*/
