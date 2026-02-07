@@ -8,6 +8,7 @@
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_audio_formats/juce_audio_formats.h>
+#include "AudioTrackProperties.h"
 
 // ====================
 // AudioTrack
@@ -22,6 +23,8 @@ public:
   // Construction
   // --------------------
   explicit AudioTrack(const std::string &sourcePath);
+
+  explicit AudioTrack(AudioTrackProperties audioTrack);
 
   // --------------------
   // Accessors
@@ -73,7 +76,7 @@ public:
 
 
   void trimEnd(double seconds);
-  void virtualEndTrim(double seconds);
+  void setVirtualEndTrim(double seconds);
   double getVirtualRemainingTime();
   int64_t getVirtualRemainingSamples(double sampleRate);
 

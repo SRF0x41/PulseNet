@@ -24,6 +24,45 @@ AudioTrack::AudioTrack(const std::string &sourcePath) : source(sourcePath) {
   remainingTime = transport.getLengthInSeconds();
 }
 
+/*#include <string>
+struct AudioTrackProperties {
+  std::string path;
+  double advanceStart;
+  double fadeinDuration = 0;
+  double virtualEndTrim = 0;
+  double fadeOutDuration = 0;
+  double overlapDuration = 0;
+};*/
+
+
+AudioTrack::AudioTrack(AudioTrackProperties audioTrack) : source(audioTrack.path){
+
+  formatManager.registerBasicFormats();
+
+  juce::File file(source);
+  if (!file.existsAsFile())
+    return;
+
+  auto *reader = formatManager.createReaderFor(file);
+  if (!reader)
+    return;
+
+  readerSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
+
+  transport.setSource(readerSource.get(), 0, nullptr, reader->sampleRate);
+  // t->setPosition(0.0);
+  transport.setPosition(0.0);
+
+  remainingTime = transport.getLengthInSeconds();
+
+  advanceStart(audioTrack.advanceStart);
+  setFadeInDuration(audioTrack.fadeinDuration);
+  setVirtualEndTrim(audioTrack.virtualEndTrim);
+  setFadeOutDuration(audioTrack.fadeOutDuration);
+  setStartOverlapSeconds(audioTrack.overlapDuration);
+
+}
+
 // =====================
 // Accessors
 // =====================
@@ -114,7 +153,7 @@ void AudioTrack::trimEnd(double seconds) {
   remainingTime -= seconds;
 }
 
-void AudioTrack::virtualEndTrim(double seconds) {
+void AudioTrack::setVirtualEndTrim(double seconds) {
   if (seconds > transport.getLengthInSeconds()) {
     return;
   }
