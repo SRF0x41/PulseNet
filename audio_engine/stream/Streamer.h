@@ -26,7 +26,7 @@ public:
         const juce::AudioSourceChannelInfo& bufferToFill) override;
 
     // Playback control
-    bool addNext(AudioTrack& track);
+    bool addNext(std::unique_ptr<AudioTrack> track);
     void start();
     void stop();
 
@@ -55,6 +55,9 @@ private:
 
 
     EventTimeline eventTimeline;
+
+    std::vector<std::unique_ptr<AudioTrack>> tracks;
+
 
 };
 

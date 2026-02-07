@@ -22,10 +22,15 @@ sample_track_list = [
     "This Summer (JBAG Remix).mp3",
     "Skrillex - Slats Slats Slats [HQ].mp3",
     "MDK.mp3",
+    "Only Love Can Break Your Heart (Masters at Work Mix).mp3",
 ]
 
 
-base_path = "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/"
+BASE_PATH = "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/"
+
+# Prefix paths
+sample_tracks = [BASE_PATH + track for track in sample_tracks]
+sample_track_list = [BASE_PATH + track for track in sample_track_list]
 """ addTrack = {
         "command" " "ADD_NEXT",
         "track_path": (full_path)
@@ -62,7 +67,6 @@ def addTrackJson(
 
     addTrack = {
         "command": "ADD_NEXT",
-        
         "properties": {
             "track_path": full_path,
             "advance_start": advance_start,
@@ -78,21 +82,49 @@ def addTrackJson(
 
 
 def main():
-    socket_server = SocketServer()
-    print(sample_track_list)
 
-    # Wait for client to connect;
+    # add_first = addTrackJson(
+    #     "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/This Summer (JBAG Remix).mp3",
+    #     15,
+    #     7,
+    #     22,
+    #     5,
+    # )
+
+    # socket_server.send(add_first.encode("utf-8"))
+
+    beatMatcher = BeatMatcher()
+
+    # Prime the streamer with two songs
+    prime_first = sample_track_list.pop(0)
+    prime_second = sample_track_list[1]
+
+    start_next_offset = beatMatcher.match_last_n_bars(prime_first, prime_second)
+
+    FIXED_ADVANCE_START = 10
+    FIXED_FADE_IN_DURATION = 5
+    FIXED_FADE_OUT_DURATION = 5
+    virtual_end_trim = start_next_offset - FIXED_FADE_OUT_DURATION
+
+    socket_server = SocketServer()
     socket_server.start()
 
-    add_first = addTrackJson(
-        "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/This Summer (JBAG Remix).mp3",
-        15,
-        7,
-        22,
-        5,
+    # Add the first track
+    prime_track_first = addTrackJson(
+        prime_first,
+        FIXED_ADVANCE_START,
+        FIXED_FADE_IN_DURATION,
+        virtual_end_trim,
+        FIXED_FADE_OUT_DURATION,
+        0
     )
+    
+    socket_server.send(prime_track_first.encode("utf-8"))
+    
 
-    socket_server.send(add_first.encode("utf-8"))
+    
+
+    # Prepare song 1
 
     # beat_matcher = BeatMatcher()
     # beat_match_queue = Queue(maxsize=2)  # optional max size

@@ -152,9 +152,12 @@ void Streamer::timerCallback() {}
 // --------------------
 // Playback control
 // --------------------
-bool Streamer::addNext(AudioTrack &track) {
-  return eventTimeline.addTrack(track);
+bool Streamer::addNext(std::unique_ptr<AudioTrack> track) {
+  AudioTrack* raw = track.get();   // stable pointer
+  tracks.push_back(std::move(track));
+  return eventTimeline.addTrack(*raw);
 }
+
 
 void Streamer::start() {
 
