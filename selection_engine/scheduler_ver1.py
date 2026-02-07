@@ -80,81 +80,56 @@ def addTrackJson(
     # Return as JSON string
     return json.dumps(addTrack)
 
+FIXED_ADVANCE_START = 10
+FIXED_FADE_IN_DURATION = 5
+FIXED_FADE_OUT_DURATION = 5
 
 def main():
+    print("Starting PulseNet beat-match preview...\n")
 
-    # add_first = addTrackJson(
-    #     "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/This Summer (JBAG Remix).mp3",
-    #     15,
-    #     7,
-    #     22,
-    #     5,
-    # )
+    # Show remaining tracks before any processing
+    print("[TRACK_LIST] Remaining sample tracks:")
+    for idx, track in enumerate(sample_track_list):
+        print(f"{idx+1}. {track}")
+    print("\n")
 
-    # socket_server.send(add_first.encode("utf-8"))
+    beat_matcher = BeatMatcher()
 
-    beatMatcher = BeatMatcher()
-
-    # Prime the streamer with two songs
+    # # Prime the first two tracks
     prime_first = sample_track_list.pop(0)
-    prime_second = sample_track_list[1]
+    prime_second = sample_track_list.pop(0)  # removes the second track as well
 
-    start_next_offset = beatMatcher.match_last_n_bars(prime_first, prime_second)
-
-    FIXED_ADVANCE_START = 10
-    FIXED_FADE_IN_DURATION = 5
-    FIXED_FADE_OUT_DURATION = 5
-    virtual_end_trim = start_next_offset - FIXED_FADE_OUT_DURATION
-
-    socket_server = SocketServer()
-    socket_server.start()
-
-    # Add the first track
-    prime_track_first = addTrackJson(
-        prime_first,
-        FIXED_ADVANCE_START,
-        FIXED_FADE_IN_DURATION,
-        virtual_end_trim,
-        FIXED_FADE_OUT_DURATION,
-        0
-    )
-    
-    socket_server.send(prime_track_first.encode("utf-8"))
+    # # Queue for beat matching
+    beat_match_queue = Queue(maxsize=2)
+    beat_match_queue.put(prime_first)
+    beat_match_queue.put(prime_second)
     
 
+    # Process remaining tracks
+    while sample_track_list:
+        q_list = list(beat_match_queue.queue)
+        song_1 = q_list[0]
+        song_2 = q_list[1]
+        
+        seconds_start_next = beat_matcher.match_last_n_bars(song_1, song_2)
+        print("=" * 50)
+        print(f"[BEAT_MATCH] {song_1} starts {seconds_start_next:.2f}s before {song_2} ends")
+
+        # Move queue forward
+        beat_match_queue.get()
+        next_track = sample_track_list.pop(0)
+        beat_match_queue.put(next_track)
+
+    # Process last two tracks
+    q_list = list(beat_match_queue.queue)
+    seconds_start_next = beat_matcher.match_last_n_bars(q_list[0], q_list[1])
+    print("=" * 50)
+    print(f"[FINAL BEAT_MATCH] {q_list[1]} starts {seconds_start_next:.2f}s before {q_list[0]} ends")
+    print("\n[END] Beat match preview completed.")
+    
+    
     
 
-    # Prepare song 1
-
-    # beat_matcher = BeatMatcher()
-    # beat_match_queue = Queue(maxsize=2)  # optional max size
-
-    # current_track = base_path+sample_track_list.pop(0)
-    # beat_match_queue.put(current_track)
-
-    # next_track = base_path+sample_track_list.pop(0)
-    # beat_match_queue.put(next_track)
-
-    # while sample_track_list:
-    #     q_list = list(beat_match_queue.queue)
-    #     print(f"Current queue {q_list}")
-
-    #     seconds_start_next = beat_matcher.match_last_n_bars(q_list[0],q_list[1])
-    #     print("=" * 50)
-    #     print(f"Start {q_list[1]} {seconds_start_next} before {q_list[0]} ends")
-
-    #     # pop queue
-    #     beat_match_queue.get()
-    #     add_next = sample_track_list.pop(0)
-    #     beat_match_queue.put(base_path+add_next)
-
-    # # prosess last two
-    # q_list = list(beat_match_queue.queue)
-    # seconds_start_next = beat_matcher.match_last_n_bars(q_list[0],q_list[1])
-    # print("=" * 50)
-    # print(f"Start {q_list[1]} {seconds_start_next} before {q_list[0]} ends")
-
-    # print("End")
 
 
 if __name__ == "__main__":
