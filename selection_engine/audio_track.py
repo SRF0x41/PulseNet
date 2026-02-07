@@ -15,16 +15,25 @@ class AudioTrack:
         self.set_fade_out_duration = set_fade_out_duration
         self.set_overlap_duration = set_overlap_duration
 
+    def to_add_next_json(self) -> dict:
+        return {
+            "command": "ADD_NEXT",
+            "track_path": self.track_path,
+            "properties": {
+                "advance_start": self.advance_start,
+                "set_fade_in_duration": self.set_fade_in_duration,
+                "set_virtual_end_trim": self.set_virtual_end_trim,
+                "set_fade_out_duration": self.set_fade_out_duration,
+                "set_overlap_duration": self.set_overlap_duration,
+            },
+        }
 
-def to_add_next_json(self) -> dict:
-    return {
-        "command": "ADD_NEXT",
-        "track_path": self.track_path,
-        "properties": {
-            "advance_start": self.advance_start,
-            "set_fade_in_duration": self.set_fade_in_duration,
-            "set_virtual_end_trim": self.set_virtual_end_trim,
-            "set_fade_out_duration": self.set_fade_out_duration,
-            "set_overlap_duration": self.set_overlap_duration,
-        },
-    }
+    def __str__(self):
+        return (
+            f"AudioTrack(track_path='{self.track_path}', "
+            f"advance_start={self.advance_start}, "
+            f"fade_in={self.set_fade_in_duration}, "
+            f"virtual_end_trim={self.set_virtual_end_trim}, "
+            f"fade_out={self.set_fade_out_duration}, "
+            f"overlap={self.set_overlap_duration})"
+        )
