@@ -1,2 +1,2 @@
 # PulseNet
-because a house party dj can be automated
+Automated dj player (DJ X clone)
