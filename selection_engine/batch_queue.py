@@ -49,7 +49,7 @@ class BatchQueue:
             first_track,
             self.FIXED_ADVANCE_START,
             self.FIXED_FADE_IN_DURATION,
-            seconds_offset - self.FIXED_FADE_OUT_DURATION,
+            seconds_offset - self.FIXED_FADE_OUT_DURATION - 3,
             self.FIXED_FADE_OUT_DURATION,
             self.next_track_overlap,
         )

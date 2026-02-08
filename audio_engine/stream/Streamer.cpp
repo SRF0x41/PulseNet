@@ -94,7 +94,7 @@ void Streamer::getNextAudioBlock(
       switch (event->type) {
       case TimelineEvent::START:
         std::cout << "START\n";
-        
+
         mixer.addInputSource(t, false);
         t->start();
         break;
@@ -117,7 +117,7 @@ void Streamer::getNextAudioBlock(
 
       case TimelineEvent::REMOVE_FROM_MIXER:
         std::cout << "REMOVE_FROM_MIXER\n";
-        // mixer.removeInputSource(t);
+        mixer.removeInputSource(t);
         break;
 
       case TimelineEvent::END_TRACKLIST:
@@ -137,8 +137,6 @@ void Streamer::getNextAudioBlock(
   mixer.getNextAudioBlock(bufferToFill);
 
   globalSamplePosition += bufferToFill.numSamples;
-
-
 }
 
 /*
@@ -154,11 +152,10 @@ void Streamer::timerCallback() {}
 // Playback control
 // --------------------
 bool Streamer::addNext(std::unique_ptr<AudioTrack> track) {
-  AudioTrack* raw = track.get();   // stable pointer
+  AudioTrack *raw = track.get(); // stable pointer
   tracks.push_back(std::move(track));
   return eventTimeline.addTrack(*raw);
 }
-
 
 void Streamer::start() {
 
