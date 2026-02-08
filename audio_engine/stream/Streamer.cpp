@@ -112,11 +112,12 @@ void Streamer::getNextAudioBlock(
       case TimelineEvent::STOP:
         std::cout << "STOP\n";
         // defer stop to avoid audio glitches
+        event->eventTriggered = true;
         break;
 
       case TimelineEvent::REMOVE_FROM_MIXER:
         std::cout << "REMOVE_FROM_MIXER\n";
-        mixer.removeInputSource(t);
+        // mixer.removeInputSource(t);
         break;
 
       case TimelineEvent::END_TRACKLIST:

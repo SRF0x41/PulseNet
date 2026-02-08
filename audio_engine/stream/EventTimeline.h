@@ -18,10 +18,14 @@ public:
   TimelineEvent* getEvent( int64_t endBlock);
 
   void startFade(TimelineEvent *event);
+
+  // The track object has been changed, propigate changes
+  void updateEventTimeline(AudioTrack &track);
   std::vector<FadeState> fadeTimeline;
   
 
 private:
+ 
   double currentSampleRate;
 
   int64_t sumTrackSamples = -1;

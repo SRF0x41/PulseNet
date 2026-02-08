@@ -68,7 +68,7 @@ int main() {
     }
 
     buffer[bytes_received] = '\0'; // null terminate string
-    std::cout << "[SERVER] " << buffer << "\n";
+    std::cout << "[DATA BUFFER] " << buffer << "\n";
 
     std::string command;
     std::string track_path;
@@ -85,11 +85,13 @@ int main() {
 
       if (command == "ADD_NEXT") {
         json props = msg["properties"];
+        std::cout << props << '\n';
         AudioTrackProperties newTrack = addTrack(props);
         printAddTrackProperties(newTrack);
-
         streamer.addNext(std::make_unique<AudioTrack>(newTrack));
       }
+
+
 
     } catch (json::parse_error &e) {
       std::cerr << "JSON parse error: " << e.what() << "\n";

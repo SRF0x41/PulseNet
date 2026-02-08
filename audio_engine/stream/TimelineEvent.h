@@ -13,6 +13,7 @@ struct TimelineEvent {
     REMOVE_FROM_MIXER,
     END_TRACKLIST
   } type;
+  bool eventTriggered = false;
 };
 
 struct FadeState {
