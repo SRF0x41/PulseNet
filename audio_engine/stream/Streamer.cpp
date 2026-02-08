@@ -76,7 +76,7 @@ void Streamer::getNextAudioBlock(
     if (fade.fadeSamplesRemaining <= 0) {
       transport->setGain(fade.fadeType == FadeState::FADE_IN ? 1.0f : 0.0f);
       fade.fadeStatus = false;
-      fade.removeFadeState = true;
+      fade.eventTriggered = true;
     }
   }
 
