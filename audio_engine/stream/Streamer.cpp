@@ -146,7 +146,17 @@ void Streamer::getNextAudioBlock(
 // --------------------
 // Timer (scheduler)
 // --------------------
-void Streamer::timerCallback() {}
+void Streamer::timerCallback() {
+  auto& fades = eventTimeline.fadeTimeline;
+
+  fades.erase(
+      std::remove_if(fades.begin(), fades.end(),
+          [](const FadeState& fade) {
+              return fade.eventTriggered;
+          }),
+      fades.end());
+}
+
 
 // --------------------
 // Playback control
@@ -160,6 +170,8 @@ bool Streamer::addNext(std::unique_ptr<AudioTrack> track) {
 void Streamer::start() {
 
   startTimerHz(10); // scheduler tick (not timing-critical)
+
+  
 }
 
 void Streamer::stop() {
