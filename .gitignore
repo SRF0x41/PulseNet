@@ -87,5 +87,4 @@ tmp/
 # --------------------
 # Ripped audio
 # --------------------
-get_audio/tracks/
-get_audio/get_track.py
+get_audio/
