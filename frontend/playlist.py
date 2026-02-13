@@ -58,17 +58,38 @@ class Playlist:
     # -------------------------
     # Getters
     # -------------------------
-    def get_tracks_name(self):
+    def get_all_tracks_name(self):
         return list(self.playlist.keys())
 
-    def get_tracks_path(self):
+    def get_all_tracks_path(self):
         return [data[0] for data in self.playlist.values()]
+    
+    def get_track_path_by_name(self,track_name):
+        return self.playlist[track_name][0]
+        
+    def get_size(self):
+        return len(self.playlist.keys())
 
     def get_playlist(self):
         return self.playlist
 
     def get_track_info(self, track_name):
         return self.playlist.get(track_name)
+    
+    def get_unplayed_tracks_name(self):
+        unplayed = []
+        for track in self.playlist.keys():
+            if not self.playlist[track][1]:
+                unplayed.append(track)
+        return unplayed
+    
+    def get_unplayed_tracks_path(self):
+        unplayed = []
+        for track in self.playlist.keys():
+            if not self.playlist[track][1]:
+                unplayed.append(self.playlist[track][0])
+        return unplayed
+        
 
     # -------------------------
     # Existence Checks
@@ -81,3 +102,15 @@ class Playlist:
             if path == track_path:
                 return True
         return False
+    
+    # -------------------------
+    # String Representation
+    # -------------------------
+    def __str__(self):
+        lines = []
+        lines.append(f"Playlist: {self.playlist_name or 'Unnamed'}")
+        lines.append("-" * 40)
+        for name, (path, played) in self.playlist.items():
+            status = "Played" if played else "Not Played"
+            lines.append(f"{name} [{status}]")
+        return "\n".join(lines)

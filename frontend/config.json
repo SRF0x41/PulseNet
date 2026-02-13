@@ -1,4 +1,4 @@
 {
     "track_urls_path": "/home/user1/Desktop/Dev/PulseNet/get_audio/public_test_track_urls.txt",
-    "track_list_url" : "/home/user1/Desktop/Dev/PulseNet/get_audio/public_test_track_urls.txt"
+    "track_list_path" : "/home/user1/Desktop/Dev/PulseNet/get_audio/public_test_tracks"
 }

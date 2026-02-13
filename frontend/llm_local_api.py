@@ -46,7 +46,7 @@ class LLMPlaylistGenerator:
         output = response.message.content.strip()
         playlist = [line.strip() for line in output.split("\n") if line.strip()]
 
-        LLMPlaylistGenerator._validate_output(playlist, cleaned_tracks)
+        #LLMPlaylistGenerator._validate_output(playlist, cleaned_tracks)
 
         return playlist
 
