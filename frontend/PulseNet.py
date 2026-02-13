@@ -1,5 +1,6 @@
 import readline
 from pathlib import Path
+from playlist import Playlist
 
 TRACK_PATH = "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/"
 
@@ -23,7 +24,10 @@ COMMAND_DESCRIPTIONS = {
     "use-playlist": "Select a playlist to use"
 }
 
+# holds playlist objects
 TEMPORARY_PLAYLISTS = []
+
+
 
 
 def print_dir(path):
@@ -38,12 +42,33 @@ def print_temporary_playlists():
 
     for playlist in TEMPORARY_PLAYLISTS:
         print(playlist)
+        
+        
+def get_tracks():
+    path = Path(TRACK_PATH)
+
+    if not path.exists():
+        return {}
+
+    tracks = {
+        item.name: str(item.resolve())
+        for item in path.iterdir()
+        if item.is_file() and item.suffix.lower() == ".mp3"
+    }
+
+    # Return dictionary sorted alphabetically by key
+    return dict(sorted(tracks.items()))
+
+    
 
 
 def main():
     print("--- PulseNet ---")
     print("Interactive mode. Type 'exit' or 'quit' to leave.")
-
+    
+    # Get master playlist, (all local mp3s)
+    master_playlist = Playlist(master_playlist=get_tracks())
+    
     while True:
         try:
             raw = input("> ").strip()
@@ -84,7 +109,7 @@ def main():
         # GET TRACKS
         # --------------------
         if command == "get-tracks":
-            print_dir(TRACK_PATH)
+            master_playlist = master_playlist.get_tracks_name()
             continue
 
         # --------------------
