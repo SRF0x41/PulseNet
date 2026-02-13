@@ -8,8 +8,8 @@ class BatchQueue:
         self.sample_batch_list = sample_track_list
 
         self.FIXED_ADVANCE_START = 0
-        self.FIXED_FADE_IN_DURATION = 2
-        self.FIXED_FADE_OUT_DURATION = 2
+        self.FIXED_FADE_IN_DURATION = 4
+        self.FIXED_FADE_OUT_DURATION = 4
 
         # Beat match class
         self.beat_matcher = BeatMatcher()
@@ -53,7 +53,7 @@ class BatchQueue:
             first_track,
             self.next_track_advanced_start,
             self.FIXED_FADE_IN_DURATION,
-            seconds_offset - self.FIXED_FADE_OUT_DURATION - 3,
+            seconds_offset - self.FIXED_FADE_OUT_DURATION,
             self.FIXED_FADE_OUT_DURATION,
             self.next_track_overlap,
         )
