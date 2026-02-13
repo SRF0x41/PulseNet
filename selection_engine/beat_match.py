@@ -96,6 +96,75 @@ class BeatMatcher:
         return seconds_before_end
 
 
+    def match_last_n_bars_advanced_second_track(self, song1_path, song2_path, song2_advance_seconds=0.0):
+        """
+        Align song2 to the last N bars of song1, but advance song2 by a set number of seconds.
+
+        :param song1_path: Path to first song (reference)
+        :param song2_path: Path to second song (to align)
+        :param song2_advance_seconds: Seconds to advance song2 from its start
+        :return: tuple (seconds_before_end_song1, advanced_song2_audio, sr2)
+        """
+        # Load audio
+        y1, sr1 = librosa.load(song1_path, mono=True)
+        y2, sr2 = librosa.load(song2_path, mono=True)
+
+        # Beat tracking
+        _, beats1 = librosa.beat.beat_track(y=y1, sr=sr1)
+        _, beats2 = librosa.beat.beat_track(y=y2, sr=sr2)
+
+        times1 = librosa.frames_to_time(beats1, sr=sr1)
+        times2 = librosa.frames_to_time(beats2, sr=sr2)
+
+        duration1 = librosa.get_duration(y=y1, sr=sr1)
+        duration2 = librosa.get_duration(y=y2, sr=sr2)
+
+        # -------------------------
+        # Advance song2
+        # -------------------------
+        advance_sample = int(song2_advance_seconds * sr2)
+        if advance_sample >= len(y2):
+            raise ValueError("Advance time exceeds song2 length.")
+        y2_advanced = y2[advance_sample:]
+
+        # Adjust beat times for advanced song2
+        times2_advanced = times2 - song2_advance_seconds
+        times2_advanced = times2_advanced[times2_advanced >= 0]  # remove negative times
+
+        # -------------------------
+        # Last N bars of song1
+        # -------------------------
+        beats_needed = self.bars * self.beats_per_bar
+        if len(times1) < beats_needed:
+            last_beats1 = times1
+        else:
+            last_beats1 = times1[-beats_needed:]
+
+        last_n_bar_start_time = last_beats1[0]
+
+        # -------------------------
+        # Beat spike signals
+        # -------------------------
+        sig1 = self.create_beat_signal(last_beats1, duration1, sr1)
+        sig2 = self.create_beat_signal(times2_advanced, duration2, sr2)
+
+        # Resample sig2 to sr1 if different
+        if sr1 != sr2:
+            sig2 = librosa.resample(sig2, orig_sr=sr2, target_sr=sr1)
+
+        # Cross-correlation
+        correlation = correlate(sig1, sig2, mode="full")
+        best_lag = np.argmax(correlation) - len(sig2)
+        start_time_seconds = best_lag / sr1
+
+        # Constrain start_time inside last N bars
+        if start_time_seconds < last_n_bar_start_time:
+            start_time_seconds = last_n_bar_start_time
+
+        seconds_before_end = duration1 - start_time_seconds
+
+        return seconds_before_end, y2_advanced, sr2
+
 """if __name__ == "__main__":
     matcher = BeatMatcher(bars=8, beats_per_bar=4)
     seconds_before_end = matcher.match_last_n_bars("song1.wav", "song2.wav")
