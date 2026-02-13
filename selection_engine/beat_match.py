@@ -98,12 +98,12 @@ class BeatMatcher:
 
     def match_last_n_bars_advanced_second_track(self, song1_path, song2_path, song2_advance_seconds=0.0):
         """
-        Align song2 to the last N bars of song1, but advance song2 by a set number of seconds.
+        Align song2 to the last N bars of song1, optionally advancing song2 by a set number of seconds.
 
         :param song1_path: Path to first song (reference)
         :param song2_path: Path to second song (to align)
         :param song2_advance_seconds: Seconds to advance song2 from its start
-        :return: tuple (seconds_before_end_song1, advanced_song2_audio, sr2)
+        :return: seconds BEFORE the end of song1 to start song2
         """
         # Load audio
         y1, sr1 = librosa.load(song1_path, mono=True)
@@ -119,32 +119,16 @@ class BeatMatcher:
         duration1 = librosa.get_duration(y=y1, sr=sr1)
         duration2 = librosa.get_duration(y=y2, sr=sr2)
 
-        # -------------------------
         # Advance song2
-        # -------------------------
-        advance_sample = int(song2_advance_seconds * sr2)
-        if advance_sample >= len(y2):
-            raise ValueError("Advance time exceeds song2 length.")
-        y2_advanced = y2[advance_sample:]
-
-        # Adjust beat times for advanced song2
         times2_advanced = times2 - song2_advance_seconds
-        times2_advanced = times2_advanced[times2_advanced >= 0]  # remove negative times
+        times2_advanced = times2_advanced[times2_advanced >= 0]
 
-        # -------------------------
-        # Last N bars of song1
-        # -------------------------
+        # Select last N bars of song1
         beats_needed = self.bars * self.beats_per_bar
-        if len(times1) < beats_needed:
-            last_beats1 = times1
-        else:
-            last_beats1 = times1[-beats_needed:]
-
+        last_beats1 = times1[-beats_needed:] if len(times1) >= beats_needed else times1
         last_n_bar_start_time = last_beats1[0]
 
-        # -------------------------
-        # Beat spike signals
-        # -------------------------
+        # Create beat spike signals
         sig1 = self.create_beat_signal(last_beats1, duration1, sr1)
         sig2 = self.create_beat_signal(times2_advanced, duration2, sr2)
 
@@ -163,7 +147,8 @@ class BeatMatcher:
 
         seconds_before_end = duration1 - start_time_seconds
 
-        return seconds_before_end, y2_advanced, sr2
+        return seconds_before_end
+
 
 """if __name__ == "__main__":
     matcher = BeatMatcher(bars=8, beats_per_bar=4)

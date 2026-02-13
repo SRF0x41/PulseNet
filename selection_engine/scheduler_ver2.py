@@ -3,7 +3,7 @@ from socket_server import SocketServer
 import json
 import os
 from queue import Queue
-from batch_queue import BatchQueue
+from batch_queue_ver2 import BatchQueue
 from audio_track import AudioTrack
 
 sample_tracks = [
@@ -20,8 +20,8 @@ sample_tracks = [
 
 
 sample_track_list = [
-    "SNOW STRIPPERS - UNDER YOUR SPELL.mp3",
-    "NIAMOS! (Chandrilian Club Mix) (From Andor (Season 2).mp3",
+    #"SNOW STRIPPERS - UNDER YOUR SPELL.mp3",
+    #"NIAMOS! (Chandrilian Club Mix) (From Andor (Season 2).mp3",
     "Skrillex - Slats Slats Slats [HQ].mp3",
     "Walking On A Dream by Empire Of The Sun (HQ Music).mp3",
     "DJ Mehdi - Signatune (Thomas Bangalter Short Edit) [Official Audio].mp3",
