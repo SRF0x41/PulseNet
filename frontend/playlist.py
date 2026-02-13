@@ -29,6 +29,10 @@ class Playlist:
         self.playlist = all_tracks
         
         
+    def get_name(self):
+        return self.playlist_name
+        
+        
     def get_tracks_name(self):
         return self.playlist.keys()
     
@@ -37,4 +41,14 @@ class Playlist:
     
     def get_playlist(self):
         return playlist
+    
+    def exists(self,track_name):
+        if track_name in self.playlist.keys():
+            return True
+        return False
+    
+    def exist(self,track_path):
+        if track_path in self.playlist.values():
+            return True
+        return False
         

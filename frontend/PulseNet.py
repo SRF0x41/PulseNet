@@ -1,6 +1,7 @@
 import readline
+import shlex
 from pathlib import Path
-from playlist import Playlist
+from playlist import Playlist  # your existing Playlist class
 
 TRACK_PATH = "/home/user1/Desktop/Dev/PulseNet/get_audio/tracks/"
 
@@ -11,42 +12,35 @@ VALID_COMMANDS = {
     "get-tracks",
     "create-playlist",
     "get-all-playlists",
-    "use-playlist"
+    "use-playlist",
+    "current-playlist"
 }
 
 COMMAND_DESCRIPTIONS = {
     "help": "Show this help message",
     "exit": "Exit PulseNet",
     "quit": "Exit PulseNet",
-    "get-tracks": "List all available tracks",
+    "get-tracks": "List all available tracks in the master playlist",
     "create-playlist": "Create a new temporary playlist (usage: create-playlist <name>)",
     "get-all-playlists": "List all temporary playlists",
-    "use-playlist": "Select a playlist to use"
+    "use-playlist": "Select a playlist to use (usage: use-playlist <name>)",
+    "current-playlist": (
+        "Show or manage the current playlist.\n"
+        "Usage:\n"
+        "  current-playlist              Show current playlist name\n"
+        "  current-playlist -a <track1> <track2> ...  Add tracks from master playlist"
+    )
 }
 
-# holds playlist objects
-TEMPORARY_PLAYLISTS = []
+# Master tracks (all local mp3s)
+MASTER_TRACKS = {}
+PLAYLISTS = {}           # {name: Playlist object}
+CURRENT_PLAYLIST = None  # Playlist object
 
 
-
-
-def print_dir(path):
-    for item in Path(path).iterdir():
-        print(item.name)
-
-
-def print_temporary_playlists():
-    if not TEMPORARY_PLAYLISTS:
-        print("No playlists created.")
-        return
-
-    for playlist in TEMPORARY_PLAYLISTS:
-        print(playlist)
-        
-        
 def get_tracks():
+    """Return dictionary of all mp3 files in TRACK_PATH, sorted alphabetically."""
     path = Path(TRACK_PATH)
-
     if not path.exists():
         return {}
 
@@ -55,20 +49,66 @@ def get_tracks():
         for item in path.iterdir()
         if item.is_file() and item.suffix.lower() == ".mp3"
     }
+    return dict(sorted(tracks.items(), key=lambda x: x[0].lower()))
 
-    # Return dictionary sorted alphabetically by key
-    return dict(sorted(tracks.items()))
 
-    
+def print_tracks(tracks_dict):
+    """Print keys of a dict vertically."""
+    for i, key in enumerate(tracks_dict, start=1):
+        print(f"{i}. {key}")
+
+
+def completer(text, state):
+    buffer = readline.get_line_buffer()
+    stripped = buffer.lstrip()
+    try:
+        parts = shlex.split(stripped)
+    except ValueError:
+        parts = stripped.split()
+
+    # Determine what the current "word" is
+    if buffer.endswith(" "):
+        parts.append("")  # allow completion for new word
+
+    options = []
+
+    # No input yet → suggest commands
+    if len(parts) == 0:
+        options = [cmd for cmd in VALID_COMMANDS if cmd.startswith(text)]
+    else:
+        command = parts[0]
+
+        # Complete first word (command)
+        if len(parts) == 1:
+            options = [cmd for cmd in VALID_COMMANDS if cmd.startswith(text)]
+
+        # Playlist name completion
+        elif command == "use-playlist":
+            options = [p for p in PLAYLISTS if p.startswith(text)]
+
+        # Track name completion
+        elif command == "current-playlist" and "-a" in parts:
+            options = [t for t in MASTER_TRACKS if t.startswith(text)]
+
+    try:
+        return options[state]
+    except IndexError:
+        return None
 
 
 def main():
+    global MASTER_TRACKS, CURRENT_PLAYLIST
+
     print("--- PulseNet ---")
     print("Interactive mode. Type 'exit' or 'quit' to leave.")
-    
-    # Get master playlist, (all local mp3s)
-    master_playlist = Playlist(master_playlist=get_tracks())
-    
+
+    MASTER_TRACKS = get_tracks()
+    master_playlist = Playlist(master_playlist=MASTER_TRACKS)
+
+    # Setup tab completion
+    readline.set_completer(completer)
+    readline.parse_and_bind("tab: complete")
+
     while True:
         try:
             raw = input("> ").strip()
@@ -79,7 +119,13 @@ def main():
         if not raw:
             continue
 
-        parts = raw.split()
+        # Use shlex to handle quotes
+        try:
+            parts = shlex.split(raw)
+        except ValueError as e:
+            print(f"Invalid input: {e}")
+            continue
+
         command = parts[0]
         args = parts[1:]
 
@@ -92,11 +138,9 @@ def main():
         # --------------------
         if command == "help":
             print("Available commands:")
-            for cmd in VALID_COMMANDS:
-                description = COMMAND_DESCRIPTIONS.get(
-                    cmd, "No description available"
-                )
-                print(f"  {cmd:<20} - {description}")
+            for cmd in sorted(VALID_COMMANDS):
+                desc = COMMAND_DESCRIPTIONS.get(cmd, "")
+                print(f"  {cmd:<20} - {desc}")
             continue
 
         # --------------------
@@ -109,7 +153,8 @@ def main():
         # GET TRACKS
         # --------------------
         if command == "get-tracks":
-            master_playlist = master_playlist.get_tracks_name()
+            tracks = master_playlist.get_tracks_name()
+            print_tracks(tracks)
             continue
 
         # --------------------
@@ -117,18 +162,13 @@ def main():
         # --------------------
         if command == "create-playlist":
             if len(args) != 1:
-                print(
-                    f"Invalid number of arguments. Usage: create-playlist <name>"
-                )
+                print("Usage: create-playlist <name>")
                 continue
-
             playlist_name = args[0]
-
-            if playlist_name in TEMPORARY_PLAYLISTS:
+            if playlist_name in PLAYLISTS:
                 print("Playlist already exists.")
                 continue
-
-            TEMPORARY_PLAYLISTS.append(playlist_name)
+            PLAYLISTS[playlist_name] = Playlist(playlist_name=playlist_name)
             print(f"Playlist '{playlist_name}' created.")
             continue
 
@@ -136,8 +176,51 @@ def main():
         # GET ALL PLAYLISTS
         # --------------------
         if command == "get-all-playlists":
-            print_temporary_playlists()
+            if not PLAYLISTS:
+                print("No playlists created.")
+            else:
+                for key in PLAYLISTS:
+                    print(key)
             continue
+
+        # --------------------
+        # USE PLAYLIST
+        # --------------------
+        if command == "use-playlist":
+            if len(args) != 1:
+                print("Usage: use-playlist <name>")
+                continue
+            playlist_name = args[0]
+            if playlist_name not in PLAYLISTS:
+                print(f"Playlist '{playlist_name}' does not exist.")
+                continue
+            CURRENT_PLAYLIST = PLAYLISTS[playlist_name]
+            print(f"Now using playlist '{playlist_name}'.")
+            continue
+
+        # --------------------
+        # CURRENT PLAYLIST
+        # --------------------
+        if command == "current-playlist":
+            if CURRENT_PLAYLIST is None:
+                print("No playlist selected. Use 'use-playlist <name>'.")
+                continue
+
+            if not args:
+                # Print playlist name
+                print(f"Current playlist: {CURRENT_PLAYLIST.get_name()}")
+                continue
+
+            # Add tracks: current-playlist -a <track1> <track2> ...
+            if args[0] == "-a" and len(args) > 1:
+                for track_name in args[1:]:
+                    if track_name not in MASTER_TRACKS:
+                        print(f"Track '{track_name}' does not exist.")
+                    else:
+                        track_path = MASTER_TRACKS[track_name]
+                        CURRENT_PLAYLIST.add_track(track_path)
+                        print(f"Added '{track_name}' to playlist.")
+                continue
 
 
 if __name__ == "__main__":
