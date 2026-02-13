@@ -1,54 +1,83 @@
+from pathlib import Path
+
+
 class Playlist:
-    # playlist: { track_name : full_path }
+    # Structure:
+    # {
+    #   "track_name": [full_path, played_boolean]
+    # }
 
-    def __init__(self, master_playlist=None, playlist_name=None):
+    def __init__(self, playlist_track_paths=None, playlist_name=None):
         self.playlist_name = playlist_name
-        self.playlist = master_playlist if master_playlist else {}
+        self.playlist = {}
 
-    def set_name(self, playlist_name):
+        if playlist_track_paths:
+            self.playlist = self._build_playlist(playlist_track_paths)
+
+    # -------------------------
+    # Internal Builder
+    # -------------------------
+    def _build_playlist(self, playlist_track_paths):
+        mod_playlist = {}
+
+        for track in playlist_track_paths:
+            name = Path(track).stem
+            mod_playlist[name] = [track, False]
+
+        return mod_playlist
+
+    # -------------------------
+    # Playlist Metadata
+    # -------------------------
+    def set_playlist_name(self, playlist_name):
         self.playlist_name = playlist_name
 
-    def add_track(self, track_path):
-        """
-        Adds a track to the playlist.
-        If the path already exists in the playlist, do nothing.
-        """
-
-        # If path already exists in values → do nothing
-        if track_path in self.playlist.values():
-            return
-
-        # Extract file name from path
-        from pathlib import Path
-        track_name = Path(track_path).name
-
-        # Add to dictionary
-        self.playlist[track_name] = track_path
-
-    def set_master_playlist(self, all_tracks):
-        self.playlist = all_tracks
-        
-        
     def get_name(self):
         return self.playlist_name
-        
-        
+
+    # -------------------------
+    # Track Management
+    # -------------------------
+    def add_track(self, track_path):
+        name = Path(track_path).stem
+
+        if name not in self.playlist:
+            self.playlist[name] = [track_path, False]
+
+    def set_playlist(self, playlist_track_paths):
+        self.playlist = self._build_playlist(playlist_track_paths)
+
+    def set_track_played(self, track_name):
+        if track_name in self.playlist:
+            self.playlist[track_name][1] = True
+
+    def reset_track_played(self, track_name):
+        if track_name in self.playlist:
+            self.playlist[track_name][1] = False
+
+    # -------------------------
+    # Getters
+    # -------------------------
     def get_tracks_name(self):
-        return self.playlist.keys()
-    
+        return list(self.playlist.keys())
+
     def get_tracks_path(self):
-        return self.playlist.values()
-    
+        return [data[0] for data in self.playlist.values()]
+
     def get_playlist(self):
-        return playlist
-    
-    def exists(self,track_name):
-        if track_name in self.playlist.keys():
-            return True
+        return self.playlist
+
+    def get_track_info(self, track_name):
+        return self.playlist.get(track_name)
+
+    # -------------------------
+    # Existence Checks
+    # -------------------------
+    def exists_by_name(self, track_name):
+        return track_name in self.playlist
+
+    def exists_by_path(self, track_path):
+        for path, _ in self.playlist.values():
+            if path == track_path:
+                return True
         return False
-    
-    def exist(self,track_path):
-        if track_path in self.playlist.values():
-            return True
-        return False
-        
