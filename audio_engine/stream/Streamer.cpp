@@ -78,6 +78,8 @@ void Streamer::getNextAudioBlock(
       fade.fadeStatus = false;
       fade.eventTriggered = true;
     }
+
+    
   }
 
   // Now handle timeline events
@@ -157,7 +159,6 @@ void Streamer::timerCallback() {
       fades.end());
 }
 
-
 // --------------------
 // Playback control
 // --------------------
@@ -170,8 +171,6 @@ bool Streamer::addNext(std::unique_ptr<AudioTrack> track) {
 void Streamer::start() {
 
   startTimerHz(100); // scheduler tick (not timing-critical)
-
-  
 }
 
 void Streamer::stop() {
