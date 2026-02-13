@@ -16,33 +16,6 @@ build/
 *.log
 
 # --------------------
-# C++ / JUCE / build artifacts
-# --------------------
-*.o
-*.obj
-*.so
-*.dll
-*.dylib
-*.exe
-*.out
-*.a
-*.lib
-CMakeFiles/
-CMakeCache.txt
-Makefile
-*.app
-*.vs/
-*.vscode/
-*.user
-*.xcodeproj/
-*.xcworkspace/
-Debug/
-Release/
-Build/
-DerivedData/
-*.dSYM/
-
-# --------------------
 # Node / Electron
 # --------------------
 node_modules/
@@ -90,23 +63,18 @@ Thumbs.db
 *.sublime-workspace
 
 # --------------------
-# Optional: debug files
+# Optional: debug / temp
 # --------------------
 debug_audio_output/
 tmp/
 
-
-
-
-# Planing txts
+# --------------------
+# Text / planning
+# --------------------
 *.txt
 
-
-# rips
+# --------------------
+# Ripped audio
+# --------------------
 get_audio/tracks/
-
 get_audio/get_track.py
-
-JUCE
-
-*.mp3

@@ -169,7 +169,7 @@ bool Streamer::addNext(std::unique_ptr<AudioTrack> track) {
 
 void Streamer::start() {
 
-  startTimerHz(10); // scheduler tick (not timing-critical)
+  startTimerHz(100); // scheduler tick (not timing-critical)
 
   
 }
