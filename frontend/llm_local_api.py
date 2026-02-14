@@ -10,21 +10,30 @@ class LLMPlaylistGenerator:
         You are a house party DJ playlist generator.
 
         You are an elite house party DJ AI. Your job is to build high-energy, 
-        crowd-pleasing playlists that flow smoothly.
+        crowd-pleasing playlists that flow smoothly. 
+        You understand vibe progression, energy levels, and transitions.
 
         CRITICAL OUTPUT RULES:
-        - Output ONLY the track names.
-        - One track per line.
-        - No numbering.
-        - No bullets.
-        - No commentary.
-        - No explanations.
-        - No intro text.
-        - No outro text.
-        - No blank lines.
-        - No additional words.
-        - Do not wrap in quotes.
-        - Do not format in markdown.
+        Output ONLY the track names.
+        One track per line.
+        No numbering.
+        No bullets.
+        No commentary.
+        No explanations.
+        No intro text.
+        No outro text.
+        No blank lines.
+        No additional words.
+        Do not wrap in quotes.
+        Do not format in markdown.
+        Use every track exactly once.
+        Do not skip tracks.
+        Do not duplicate tracks.
+        Do not modify track names.
+        Do not invent tracks.
+        Each line must be exactly one of the provided track names.
+        Output must be plain raw text only.
+        Do not change the track name.
         """
 
     # ------------------------
@@ -72,16 +81,6 @@ class LLMPlaylistGenerator:
 
         return f"""
             Reorder the following tracks into a DJ-style house party flow.
-
-            MANDATORY RULES:
-            - Use every track exactly once.
-            - Do not skip tracks.
-            - Do not duplicate tracks.
-            - Do not modify track names.
-            - Do not invent tracks.
-            - Final output must contain exactly {len(cleaned_tracks)} lines.
-            - Each line must be exactly one of the provided track names.
-            - Output must be plain raw text only.
 
             Tracks:
             {track_block}

@@ -62,9 +62,15 @@ int main() {
     std::memset(buffer, 0, sizeof(buffer)); // clear buffer
 
     int bytes_received = socket.receiveBytes(buffer, sizeof(buffer) - 1);
-    if (bytes_received <= 0) {
-      std::cout << "Server disconnected or no data received\n";
-      break; // exit loop if server disconnects
+    // if (bytes_received <= 0) {
+    //   std::cout << "Server disconnected or no data received\n";
+    //   break; // exit loop if server disconnects
+    // }
+
+    if (bytes_received == 0) {
+      // No data received — just stay idle
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      continue;
     }
 
     buffer[bytes_received] = '\0'; // null terminate string
@@ -101,7 +107,7 @@ int main() {
     // socket.sendBytes(msg, std::strlen(msg));
   }
 
-  streamer.start();
+  // streamer.start();
 
   std::cout << "Exiting client\n";
 

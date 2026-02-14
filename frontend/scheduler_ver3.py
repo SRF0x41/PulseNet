@@ -20,20 +20,21 @@ sample_tracks = [
 
 
 sample_track_list = [
-    "SNOW STRIPPERS - UNDER YOUR SPELL.mp3",
-    "NIAMOS! (Chandrilian Club Mix) (From Andor (Season 2).mp3",
-    "Skrillex - Slats Slats Slats [HQ].mp3",
-    "Walking On A Dream by Empire Of The Sun (HQ Music).mp3",
-    "DJ Mehdi - Signatune (Thomas Bangalter Short Edit) [Official Audio].mp3",
-    "MDK.mp3",
-    "SNOW STRIPPERS - UNDER YOUR SPELL.mp3",
-    "Disclosure - Latch ft. Sam Smith.mp3",
-    "Abracadabra (Gesaffelstein Remix).mp3",
-    "Kinda Like It That Way - Snow Strippers.mp3",
-    "Roosevelt - Moving On (karlmixclub extended) version 1.mp3",   
+    #  "SNOW STRIPPERS - UNDER YOUR SPELL.mp3",
+    # #"NIAMOS! (Chandrilian Club Mix) (From Andor (Season 2).mp3",
+    # "Skrillex - Slats Slats Slats [HQ].mp3",
+    # "Walking On A Dream by Empire Of The Sun (HQ Music).mp3",
+    # "DJ Mehdi - Signatune (Thomas Bangalter Short Edit) [Official Audio].mp3",
+    # "MDK.mp3",
+    # #"SNOW STRIPPERS - UNDER YOUR SPELL.mp3",
+    # "Disclosure - Latch ft. Sam Smith.mp3",
+    # "Abracadabra (Gesaffelstein Remix).mp3",
+    # "Kinda Like It That Way - Snow Strippers.mp3",
+    # "Roosevelt - Moving On (karlmixclub extended) version 1.mp3",   
     
     
     "This Summer (JBAG Remix).mp3",
+    "Kinda Like It That Way - Snow Strippers.mp3",
     "Flume - Holdin On.mp3",
     "MDK.mp3",
     "Flume - Sleepless feat. Jezzabell Doran.mp3",

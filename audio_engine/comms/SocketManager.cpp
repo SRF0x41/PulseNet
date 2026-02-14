@@ -143,7 +143,7 @@ int SocketManager::receiveBytes(void *buffer, size_t size) {
     return -1;
   }
 
-  std::cout << "[SocketManager] receiveBytes(" << size << " bytes)\n";
+  // std::cout << "[SocketManager] receiveBytes(" << size << " bytes)\n";
 
 #ifdef _WIN32
   return ::recv(socketHandle,
@@ -157,7 +157,7 @@ int SocketManager::receiveBytes(void *buffer, size_t size) {
 
 bool SocketManager::isConnected() const {
   bool connected = socketHandle != invalidSocket();
-  std::cout << "[SocketManager] isConnected() -> "
-            << (connected ? "true" : "false") << "\n";
+  // std::cout << "[SocketManager] isConnected() -> "
+  //           << (connected ? "true" : "false") << "\n";
   return connected;
 }

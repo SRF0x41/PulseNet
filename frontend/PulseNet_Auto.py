@@ -36,9 +36,11 @@ def main():
     # Get master playlist
     MASTER_PLAYLIST_OBJECT = Playlist(get_tracks(MASTER_PLAYLIST_PATH),"MASTER PLAYLIST")
     
+    print("--- Loaded Master Playlist ---")
     print(MASTER_PLAYLIST_OBJECT)
     
-    llm_recomended_playlist_raw = LLMPlaylistGenerator.generate(MASTER_PLAYLIST_OBJECT.get_all_tracks_name())
+    llm_recomended_playlist_raw = LLMPlaylistGenerator.generate(MASTER_PLAYLIST_OBJECT.get_unplayed_tracks_name())
+    print(llm_recomended_playlist_raw)
     
     # Validate that every element of the raw list is a real track
     validated_tracks_by_name = []
@@ -47,9 +49,30 @@ def main():
             validated_tracks_by_name.append(output)
     print(f"{len(validated_tracks_by_name)} tracks validated out of {MASTER_PLAYLIST_OBJECT.get_size()}")
     
+    # Set validated tracks to played
+    for track in validated_tracks_by_name:
+        MASTER_PLAYLIST_OBJECT.set_track_played(track)
+        
+    print("--- Loaded Master Playlist ---")
+    print(MASTER_PLAYLIST_OBJECT)
+        
+        
+    
     
     # Send the playlist to the scheduler
-    
+    valid_commands = ["play", "pause", "stop", "quit"]
+
+    while True:
+        cmd = input("Command: ").strip().lower()
+        
+        if cmd == "quit":
+            break
+        
+        if cmd in valid_commands:
+            print(f"Executing {cmd}...")
+        else:
+            print("Unknown command. Valid commands:", valid_commands)
+
     
     # Await client connection 
     socket = SocketServer()
