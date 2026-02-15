@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import random
 
 class Playlist:
     # Structure:
@@ -89,6 +89,13 @@ class Playlist:
             if not self.playlist[track][1]:
                 unplayed.append(self.playlist[track][0])
         return unplayed
+    
+    
+    def shuffle_order(self):
+        items = list(self.playlist.items())  # Convert to list of (key, value)
+        random.shuffle(items)                # Shuffle in place
+        self.playlist = dict(items)          # Rebuild dictionary
+
         
 
     # -------------------------

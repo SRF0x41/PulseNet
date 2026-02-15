@@ -58,6 +58,26 @@ class LLMPlaylistGenerator:
         #LLMPlaylistGenerator._validate_output(playlist, cleaned_tracks)
 
         return playlist
+    
+    # @staticmethod
+    # def generate(already_played: List[str], new_track_list: List[str]) -> List[str]:
+    #     cleaned_tracks = LLMPlaylistGenerator._clean_tracks(track_list)
+    #     prompt = LLMPlaylistGenerator._build_prompt(cleaned_tracks)
+
+    #     response = chat(
+    #         LLMPlaylistGenerator.MODEL,
+    #         messages=[
+    #             {"role": "system", "content": LLMPlaylistGenerator.SYSTEM_PROMPT},
+    #             {"role": "user", "content": prompt},
+    #         ],
+    #     )
+
+    #     output = response.message.content.strip()
+    #     playlist = [line.strip() for line in output.split("\n") if line.strip()]
+
+    #     #LLMPlaylistGenerator._validate_output(playlist, cleaned_tracks)
+
+    #     return playlist
 
     # ------------------------
     # Internal Helpers
