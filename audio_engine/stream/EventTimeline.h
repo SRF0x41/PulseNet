@@ -19,6 +19,8 @@ public:
 
   void startFade(TimelineEvent *event);
 
+  int64_t advanceNextTrack();
+
   // The track object has been changed, propigate changes
   void updateEventTimeline(AudioTrack &track);
   std::vector<FadeState> fadeTimeline;

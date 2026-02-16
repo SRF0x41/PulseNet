@@ -128,6 +128,15 @@ void EventTimeline::startFade(TimelineEvent *event) {
   fadeTimeline.push_back(push_fade);
 }
 
+int64_t EventTimeline::advanceNextTrack(){
+  while(timeline[eventIndex].type != TimelineEvent::START){
+    timeline[eventIndex].eventTriggered = true;
+    eventIndex++;
+  }
+  return timeline[eventIndex].eventSample - 512;
+}
+
+
 TimelineEvent *EventTimeline::getEvent(int64_t endBlock) {
   if (eventIndex >= timeline.size()) {
     return nullptr; // no more events

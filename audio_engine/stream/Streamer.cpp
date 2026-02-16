@@ -17,10 +17,8 @@ Streamer::Streamer() : eventTimeline(currentSampleRate) {
 
 Streamer::~Streamer() {
   stop();
-
   audioSourcePlayer.setSource(nullptr);
   deviceManager.removeAudioCallback(&audioSourcePlayer);
-
   mixer.releaseResources();
 }
 
@@ -41,8 +39,31 @@ double Streamer::getGlobalPositionSeconds() {
   return static_cast<double>(globalSamplePosition) / currentSampleRate;
 }
 
+void Streamer::pause() {
+  for (auto &t : tracks) {
+    t->getTransport()->stop();
+  }
+  pauseStatus = true;
+}
+
+void Streamer::resume() {
+  for (auto &t : tracks) {
+    t->getTransport()->start();
+  }
+  pauseStatus = false;
+}
+
+void Streamer::skipNext(){
+  mixer.removeAllInputs();
+  globalSamplePosition = eventTimeline.advanceNextTrack();
+}
+
 void Streamer::getNextAudioBlock(
     const juce::AudioSourceChannelInfo &bufferToFill) {
+
+  if (pauseStatus) {
+    return;
+  }
   bufferToFill.clearActiveBufferRegion();
 
   int64_t blockStart = globalSamplePosition;
@@ -78,9 +99,14 @@ void Streamer::getNextAudioBlock(
       fade.fadeStatus = false;
       fade.eventTriggered = true;
     }
-
-    
   }
+
+  // Now remove completed fades
+  eventTimeline.fadeTimeline.erase(
+      std::remove_if(eventTimeline.fadeTimeline.begin(),
+                     eventTimeline.fadeTimeline.end(),
+                     [](const auto &fade) { return fade.eventTriggered; }),
+      eventTimeline.fadeTimeline.end());
 
   // Now handle timeline events
   TimelineEvent *event = nullptr;
@@ -141,23 +167,10 @@ void Streamer::getNextAudioBlock(
   globalSamplePosition += bufferToFill.numSamples;
 }
 
-/*
-
-*/
-
 // --------------------
 // Timer (scheduler)
 // --------------------
-void Streamer::timerCallback() {
-  auto& fades = eventTimeline.fadeTimeline;
-
-  fades.erase(
-      std::remove_if(fades.begin(), fades.end(),
-          [](const FadeState& fade) {
-              return fade.eventTriggered;
-          }),
-      fades.end());
-}
+void Streamer::timerCallback() {}
 
 // --------------------
 // Playback control
@@ -169,7 +182,6 @@ bool Streamer::addNext(std::unique_ptr<AudioTrack> track) {
 }
 
 void Streamer::start() {
-
   startTimerHz(100); // scheduler tick (not timing-critical)
 }
 

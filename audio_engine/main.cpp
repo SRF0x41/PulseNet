@@ -38,8 +38,7 @@ void printAddTrackProperties(const AudioTrackProperties &props) {
   std::cout << std::endl;
 }
 
-/*TODO: make sure streamer removes tracks and fades in the timer callback! not
- * in the audio buffer callback
+/*TODO:
  add dynamic auditrack property changes*/
 
 int main() {
@@ -62,6 +61,7 @@ int main() {
     std::memset(buffer, 0, sizeof(buffer)); // clear buffer
 
     int bytes_received = socket.receiveBytes(buffer, sizeof(buffer) - 1);
+    // Break if no data recieved
     // if (bytes_received <= 0) {
     //   std::cout << "Server disconnected or no data received\n";
     //   break; // exit loop if server disconnects
@@ -97,6 +97,17 @@ int main() {
         streamer.addNext(std::make_unique<AudioTrack>(newTrack));
       }
 
+      if (command == "PAUSE"){
+        streamer.pause();
+      }
+      if (command == "RESUME"){
+        streamer.resume();
+      }
+
+      if (command == "SKIP"){
+        streamer.skipNext();
+      }
+
     } catch (json::parse_error &e) {
       std::cerr << "JSON parse error: " << e.what() << "\n";
       std::cerr << "Buffer content: " << buffer << "\n";
@@ -107,31 +118,6 @@ int main() {
     // socket.sendBytes(msg, std::strlen(msg));
   }
 
-  // streamer.start();
-
   std::cout << "Exiting client\n";
-
-  // --------------------
-  // Console input thread
-  // --------------------
-  std::thread inputThread([&streamer]() {
-    std::string userInput;
-    std::cout << "Type something (type 'exit' to quit):" << std::endl;
-
-    while (true) {
-      std::cout << "> ";
-      std::getline(std::cin, userInput);
-
-      if (userInput == "exit") {
-        std::cout << "Exiting..." << std::endl;
-        streamer.stop(); // stop music playback
-        break;
-      }
-
-      std::cout << "You typed: " << userInput << std::endl;
-    }
-  });
-  if (inputThread.joinable())
-    inputThread.join();
   return 0;
 }

@@ -58,7 +58,52 @@ def main():
         track_json = json.dumps(next_track.to_json())
         socket.send(track_json.encode('utf-8'))
         next_track = batch_queue.getNext()
+        
+        
     
+    
+        
+        
+    
+    
+    # Send the playlist to the scheduler
+    valid_commands = ["pause", "resume", "skip", "quit"]
+
+    while True:
+        cmd = input("Command: ").strip().lower()
+        
+        if cmd == "quit":
+            break
+        
+        if cmd in valid_commands:
+            print(f"Executing {cmd}...")
+        else:
+            print("Unknown command. Valid commands:", valid_commands)
+            
+        if cmd == "pause":
+            pause_command = {"command":"PAUSE"}
+            socket.send(json.dumps(pause_command).encode('utf-8'))
+        
+        if cmd == "resume":
+            resume_command = {"command":"RESUME"}
+            socket.send(json.dumps(resume_command).encode('utf-8'))
+            
+        if cmd == "skip":
+            socket.send(json.dumps({"command":"SKIP"}).encode('utf-8'))
+            
+    
+   
+    
+    
+    
+    
+
+
+if __name__ == "__main__":
+    main()
+
+
+
     # # keep generating the playlist until each track has been proceesed and validated 
     # validated_tracks = Playlist(playlist_name="VALIDATED TRACKS FULL LIST BATCHING NOT SUPPORTED")
     
@@ -96,33 +141,3 @@ def main():
         
     # print("--- Loaded Master Playlist ---")
     # print(MASTER_PLAYLIST_OBJECT)
-        
-        
-    
-    
-    # Send the playlist to the scheduler
-    valid_commands = ["play", "pause", "stop", "quit"]
-
-    while True:
-        cmd = input("Command: ").strip().lower()
-        
-        if cmd == "quit":
-            break
-        
-        if cmd in valid_commands:
-            print(f"Executing {cmd}...")
-        else:
-            print("Unknown command. Valid commands:", valid_commands)
-
-    
-    # Await client connection 
-    socket = SocketServer()
-    socket.start()
-    
-    
-    
-    
-
-
-if __name__ == "__main__":
-    main()
