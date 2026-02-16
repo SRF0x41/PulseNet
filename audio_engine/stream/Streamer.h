@@ -56,7 +56,7 @@ private:
   std::vector<std::unique_ptr<AudioTrack>> tracks;
 
   bool pauseStatus = false;
-  bool skipStatus = false;
+  bool requestSkip = false;
 };
 
 } // namespace mixer

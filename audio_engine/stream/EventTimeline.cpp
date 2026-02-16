@@ -128,13 +128,22 @@ void EventTimeline::startFade(TimelineEvent *event) {
   fadeTimeline.push_back(push_fade);
 }
 
-int64_t EventTimeline::advanceNextTrack(){
-  while(timeline[eventIndex].type != TimelineEvent::START){
-    timeline[eventIndex].eventTriggered = true;
-    eventIndex++;
-  }
-  return timeline[eventIndex].eventSample - 512;
+int64_t EventTimeline::advanceToNextStart()
+{
+    while (eventIndex < timeline.size())
+    {
+        TimelineEvent& ev = timeline[eventIndex];
+
+        if (ev.type == TimelineEvent::START)
+            return ev.eventSample;
+
+        ev.eventTriggered = true;
+        ++eventIndex;
+    }
+
+    return -1; // no more tracks
 }
+
 
 
 TimelineEvent *EventTimeline::getEvent(int64_t endBlock) {
@@ -146,6 +155,9 @@ TimelineEvent *EventTimeline::getEvent(int64_t endBlock) {
     return nullptr; // event is beyond this block
   }
 
+  if (timeline[eventIndex].eventTriggered){
+    return nullptr;
+  }
   // Event is valid for this block
   ++eventIndex;
   return &timeline[eventIndex - 1];

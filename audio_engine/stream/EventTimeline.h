@@ -19,7 +19,7 @@ public:
 
   void startFade(TimelineEvent *event);
 
-  int64_t advanceNextTrack();
+  int64_t advanceToNextStart();
 
   // The track object has been changed, propigate changes
   void updateEventTimeline(AudioTrack &track);
