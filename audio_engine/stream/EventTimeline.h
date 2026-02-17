@@ -21,6 +21,9 @@ public:
 
   int64_t advanceToNextStart();
 
+  void requestSkip();
+
+
   // The track object has been changed, propigate changes
   void updateEventTimeline(AudioTrack &track);
   std::vector<FadeState> fadeTimeline;
@@ -34,6 +37,4 @@ private:
   std::vector<TimelineEvent> timeline;
   size_t eventIndex = 0;
   size_t fadeIndex = 0;
-
-  
 };

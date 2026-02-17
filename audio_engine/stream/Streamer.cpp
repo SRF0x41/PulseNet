@@ -53,7 +53,17 @@ void Streamer::resume() {
   pauseStatus = false;
 }
 
-void Streamer::skipNext() { requestSkip = true; }
+void Streamer::skipNext() {
+  for (auto &t : tracks)
+    t->getTransport()->stop();
+
+  // Stop everything cleanly
+  mixer.removeAllInputs();
+
+  // Clear fades
+  eventTimeline.fadeTimeline.clear();
+  requestSkip = true;
+}
 
 void Streamer::getNextAudioBlock(
     const juce::AudioSourceChannelInfo &bufferToFill) {
@@ -78,7 +88,7 @@ void Streamer::getNextAudioBlock(
 
     if (nextStart >= 0)
       globalSamplePosition = nextStart;
-    requestSkip = false;
+    //requestSkip = false;
   }
   bufferToFill.clearActiveBufferRegion();
 
@@ -141,6 +151,10 @@ void Streamer::getNextAudioBlock(
 
         mixer.addInputSource(t, false);
         t->start();
+        if(requestSkip){
+          t->setGain(1.0);
+        }
+        requestSkip = false;
         break;
 
       case TimelineEvent::FADE_IN:

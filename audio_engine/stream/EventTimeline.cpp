@@ -128,25 +128,22 @@ void EventTimeline::startFade(TimelineEvent *event) {
   fadeTimeline.push_back(push_fade);
 }
 
-int64_t EventTimeline::advanceToNextStart()
-{
-    while (eventIndex < timeline.size())
-    {
-        TimelineEvent& ev = timeline[eventIndex];
+int64_t EventTimeline::advanceToNextStart() {
+  while (eventIndex < timeline.size()) {
+    TimelineEvent &ev = timeline[eventIndex];
 
-        if (ev.type == TimelineEvent::START)
-            return ev.eventSample;
+    if (ev.type == TimelineEvent::START)
+      return ev.eventSample;
 
-        ev.eventTriggered = true;
-        ++eventIndex;
-    }
+    ev.eventTriggered = true;
+    ++eventIndex;
+  }
 
-    return -1; // no more tracks
+  return -1; // no more tracks
 }
 
-
-
 TimelineEvent *EventTimeline::getEvent(int64_t endBlock) {
+
   if (eventIndex >= timeline.size()) {
     return nullptr; // no more events
   }
@@ -155,9 +152,7 @@ TimelineEvent *EventTimeline::getEvent(int64_t endBlock) {
     return nullptr; // event is beyond this block
   }
 
-  if (timeline[eventIndex].eventTriggered){
-    return nullptr;
-  }
+  
   // Event is valid for this block
   ++eventIndex;
   return &timeline[eventIndex - 1];
@@ -173,7 +168,6 @@ struct TimelineEvent {
     enum EventType { START, STOP, FADE_IN, FADE_OUT } type;
 
   };*/
-
 
 // void EventTimeline::updateEventTimeline() {
 //   if (eventIndex >= timeline.size())
@@ -241,9 +235,6 @@ struct TimelineEvent {
 //               return a.eventSample < b.eventSample;
 //             });
 // }
-
-
-
 
 // bool EventTimeline::addTrack(AudioTrack &track) {
 //   if (!track.getTransport())
