@@ -88,7 +88,7 @@ void Streamer::getNextAudioBlock(
 
     if (nextStart >= 0)
       globalSamplePosition = nextStart;
-    //requestSkip = false;
+    // requestSkip = false;
   }
   bufferToFill.clearActiveBufferRegion();
 
@@ -151,7 +151,7 @@ void Streamer::getNextAudioBlock(
 
         mixer.addInputSource(t, false);
         t->start();
-        if(requestSkip){
+        if (requestSkip) {
           t->setGain(1.0);
         }
         requestSkip = false;

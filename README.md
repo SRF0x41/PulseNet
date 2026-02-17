@@ -1,2 +1,2 @@
 # PulseNet
-Automated dj player (DJ X clone)
+Music player with automated crossfade and phrase transitions.
