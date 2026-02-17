@@ -27,16 +27,26 @@ def get_tracks(track_path):
 
     return sorted(tracks, key=lambda x: x.lower())
 
+def get_default_playlist_paths(root,playlist):
+    out = []
+    for track in playlist:
+        out.append(root+"/"+track)
+        
+    return out
+    
+
 
 def main():
     CONFIG = load_config()
-    MASTER_PLAYLIST_PATH = CONFIG.get("track_list_path")
+    MASTER_PLAYLIST_PATH = CONFIG.get("track_list_root_path")
     
     print("--- PulseNet ---")
     print(f"Master playlist path {MASTER_PLAYLIST_PATH}") 
     
     # Get master playlist
-    MASTER_PLAYLIST_OBJECT = Playlist(get_tracks(MASTER_PLAYLIST_PATH),"MASTER PLAYLIST")
+    # MASTER_PLAYLIST_OBJECT = Playlist(get_tracks(MASTER_PLAYLIST_PATH),"MASTER PLAYLIST")
+    
+    MASTER_PLAYLIST_OBJECT = Playlist(get_default_playlist_paths(MASTER_PLAYLIST_PATH,CONFIG.get("default_playlist")))
     
     print("--- Loaded Master Playlist ---")
     print(MASTER_PLAYLIST_OBJECT)
