@@ -44,30 +44,14 @@ def main():
     print(f"Master playlist path {MASTER_PLAYLIST_PATH}") 
     
     # Get master playlist
-    MASTER_PLAYLIST_OBJECT = Playlist(get_tracks(MASTER_PLAYLIST_PATH),"MASTER PLAYLIST")
+    # MASTER_PLAYLIST_OBJECT = Playlist(get_tracks(MASTER_PLAYLIST_PATH),"MASTER PLAYLIST")
     
-    # MASTER_PLAYLIST_OBJECT = Playlist(get_default_playlist_paths(MASTER_PLAYLIST_PATH,CONFIG.get("default_playlist")))
+    MASTER_PLAYLIST_OBJECT = Playlist(get_default_playlist_paths(MASTER_PLAYLIST_PATH,CONFIG.get("default_playlist")))
     
     print("--- Loaded Master Playlist ---")
     print(MASTER_PLAYLIST_OBJECT)
     
-    print("--- Shuffle Master Playlist ---")
-    MASTER_PLAYLIST_OBJECT.shuffle_order()
-    print(MASTER_PLAYLIST_OBJECT)
     
-    # Await client connection 
-    socket = SocketServer()
-    socket.start()
-    
-     # Show remaining tracks before any processing
-    batch_queue = BatchQueue(MASTER_PLAYLIST_OBJECT.get_all_tracks_path())
-    
-    next_track = batch_queue.getNext()
-    while next_track:
-        print(next_track)
-        track_json = json.dumps(next_track.to_json())
-        socket.send(track_json.encode('utf-8'))
-        next_track = batch_queue.getNext()
         
         
     
